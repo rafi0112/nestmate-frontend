@@ -1,0 +1,27 @@
+
+> roommate-finder-next@0.1.0 dev
+> next dev -p 3001
+
+▲ Next.js 16.2.4 (Turbopack)
+- Local:         http://localhost:3001
+- Network:       http://192.168.0.187:3001
+- Environments: .env.local
+✓ Ready in 442ms
+⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of C:\nestmate-v3-complete\package-lock.json as the root directory.
+ To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+ Detected additional lockfiles: 
+   * C:\nestmate-v3-complete\roommate-finder-next\package-lock.json
+
+Creating turbopack project {
+  dir: 'C:\\nestmate-v3-complete\\roommate-finder-next',
+  testMode: true
+}
+
+ GET / 200 in 508ms (next.js: 164ms, application-code: 344ms)
+ GET / 200 in 269ms (next.js: 13ms, application-code: 256ms)
+ GET /compatibility 200 in 157ms (next.js: 64ms, application-code: 94ms)
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+ GET /compatibility 200 in 129ms (next.js: 3ms, application-code: 126ms)
+ GET /compatibility 200 in 105ms (next.js: 2ms, application-code: 102ms)

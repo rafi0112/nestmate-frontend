@@ -1,0 +1,157 @@
+'use client';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
+import { Home, Search, Plus, BookMarked, LogOut, Moon, Sun, Menu, X, Users, Target, MessageSquare, FileText, User } from 'lucide-react';
+
+const NAV = [
+  { href: '/',             label: 'Home',        icon: Home },
+  { href: '/browse',       label: 'Browse',      icon: Search },
+  { href: '/compatibility',label: 'Match Quiz',  icon: Target },
+  { href: '/messages',     label: 'Messages',    icon: MessageSquare, auth: true },
+  { href: '/add-listing',  label: 'Post Room',   icon: Plus,          auth: true },
+  { href: '/my-listings',  label: 'My Listings', icon: BookMarked,    auth: true },
+  { href: '/household',    label: 'Household',   icon: Home, auth: true },
+  { href: '/profile',      label: 'Profile',     icon: User, auth: true },
+  { href: '/agreement',    label: 'Agreement',   icon: FileText },
+];
+
+export default function Navbar() {
+  const { currentUser, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
+  const pathname = usePathname();
+  const [open, setOpen] = useState(false);
+
+  const initials = (currentUser?.displayName || currentUser?.email || 'U')
+    .split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+
+  return (
+    <nav style={{ background: 'var(--bg-card)', borderBottom: '1px solid var(--border)', position: 'sticky', top: 0, zIndex: 200 }}>
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', display: 'flex', alignItems: 'center', height: 62, gap: 0 }}>
+
+        {/* Logo */}
+        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 9, marginRight: 28, flexShrink: 0, textDecoration: 'none' }}>
+          <div style={{ width: 34, height: 34, background: 'var(--accent)', borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Users size={18} color="#fff" />
+          </div>
+          <span style={{ fontFamily: 'Syne, serif', fontWeight: 800, fontSize: 18, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
+            Nest<span style={{ color: 'var(--accent)' }}>Mate</span>
+          </span>
+        </Link>
+
+        {/* Desktop nav links */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }} className="nav-desktop">
+          {NAV.map(({ href, label, icon: Icon, auth }) => {
+            if (auth && !currentUser) return null;
+            const active = pathname === href;
+            return (
+              <Link key={href} href={href}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 5,
+                  padding: '6px 10px', borderRadius: 7,
+                  fontSize: 13, fontFamily: 'Times New Roman, serif', fontWeight: active ? 700 : 500,
+                  color: active ? 'var(--accent)' : 'var(--text-secondary)',
+                  background: active ? 'var(--accent-light)' : 'transparent',
+                  transition: 'all 0.12s', whiteSpace: 'nowrap',
+                  borderBottom: active ? `2px solid var(--accent)` : '2px solid transparent',
+                }}
+                onMouseEnter={e => { if (!active) { const el = e.currentTarget as HTMLElement; el.style.background = 'var(--bg-subtle)'; el.style.color = 'var(--text-primary)'; } }}
+                onMouseLeave={e => { if (!active) { const el = e.currentTarget as HTMLElement; el.style.background = 'transparent'; el.style.color = 'var(--text-secondary)'; } }}
+              >
+                <Icon size={13} />
+                {label}
+              </Link>
+            );
+          })}
+        </div>
+
+        {/* Right controls */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 12 }}>
+
+          {/* Theme toggle */}
+          <button onClick={toggleTheme} title={theme === 'dark' ? 'Switch to light' : 'Switch to dark'}
+            style={{ width: 32, height: 32, border: '1px solid var(--border)', borderRadius: 7, background: 'var(--bg-subtle)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)', transition: 'all 0.12s' }}>
+            {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
+          </button>
+
+          {currentUser ? (
+            <>
+              {/* Avatar + name chip */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '4px 10px 4px 5px', background: 'var(--bg-subtle)', borderRadius: 100, border: '1px solid var(--border)' }}>
+                <div style={{ width: 26, height: 26, borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#fff', fontFamily: 'Syne, serif', flexShrink: 0 }}>
+                  {initials}
+                </div>
+                <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', maxWidth: 80, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: 'Times New Roman, serif' }}>
+                  {currentUser.displayName || currentUser.email?.split('@')[0]}
+                </span>
+              </div>
+              <button onClick={logout} title="Log out"
+                style={{ width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--border)', borderRadius: 7, background: 'transparent', cursor: 'pointer', color: 'var(--text-secondary)', transition: 'all 0.12s' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--danger-light)'; (e.currentTarget as HTMLElement).style.color = 'var(--danger)'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'var(--text-secondary)'; }}>
+                <LogOut size={13} />
+              </button>
+            </>
+          ) : (
+            <div style={{ display: 'flex', gap: 7 }} className="nav-desktop">
+              <Link href="/login" style={{ padding: '6px 14px', borderRadius: 7, border: '1.5px solid var(--border)', fontSize: 13, fontWeight: 600, fontFamily: 'Syne, serif', color: 'var(--text-primary)', background: 'transparent', transition: 'all 0.12s' }}>
+                Log In
+              </Link>
+              <Link href="/register" style={{ padding: '6px 14px', borderRadius: 7, background: 'var(--accent)', fontSize: 13, fontWeight: 700, fontFamily: 'Syne, serif', color: '#fff', transition: 'all 0.12s' }}>
+                Sign Up
+              </Link>
+            </div>
+          )}
+
+          {/* Mobile hamburger */}
+          <button onClick={() => setOpen(!open)} className="nav-mobile-btn"
+            style={{ width: 32, height: 32, border: '1px solid var(--border)', borderRadius: 7, background: 'var(--bg-subtle)', cursor: 'pointer', display: 'none', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>
+            {open ? <X size={15} /> : <Menu size={15} />}
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile menu drawer */}
+      {open && (
+        <div className="nav-mobile-drawer" style={{ background: 'rgba(255,255,255,0.76)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', borderTop: '1px solid var(--border)', padding: '12px 20px 20px' }}>
+          {NAV.map(({ href, label, icon: Icon, auth }) => {
+            if (auth && !currentUser) return null;
+            const active = pathname === href;
+            return (
+              <Link key={href} href={href} onClick={() => setOpen(false)}
+                style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '13px 0', borderBottom: '1px solid var(--border)', fontSize: 15, color: active ? 'var(--accent)' : 'var(--text-primary)', fontWeight: active ? 700 : 500, fontFamily: 'Times New Roman, serif' }}>
+                <Icon size={15} style={{ color: active ? 'var(--accent)' : 'var(--text-muted)' }} />
+                {label}
+              </Link>
+            );
+          })}
+          {!currentUser ? (
+            <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
+              <Link href="/login" onClick={() => setOpen(false)} style={{ flex: 1, textAlign: 'center', padding: '11px', border: '1.5px solid var(--border)', borderRadius: 9, fontWeight: 700, fontFamily: 'Syne, serif', fontSize: 14 }}>Log In</Link>
+              <Link href="/register" onClick={() => setOpen(false)} style={{ flex: 1, textAlign: 'center', padding: '11px', background: 'var(--accent)', borderRadius: 9, fontWeight: 700, fontFamily: 'Syne, serif', fontSize: 14, color: '#fff' }}>Sign Up</Link>
+            </div>
+          ) : (
+            <button onClick={() => { logout(); setOpen(false); }} style={{ width: '100%', marginTop: 14, padding: '11px', border: '1px solid var(--border)', borderRadius: 9, background: 'var(--bg-subtle)', fontSize: 14, color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'Times New Roman, serif', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+              <LogOut size={14} /> Log Out
+            </button>
+          )}
+        </div>
+      )}
+
+      <style>{`
+        @media (max-width: 900px) {
+          .nav-desktop { display: none !important; }
+          .nav-mobile-btn { display: flex !important; }
+        }
+        .nav-mobile-drawer {
+          box-shadow: var(--shadow-lg);
+        }
+        [data-theme='dark'] .nav-mobile-drawer {
+          background: rgba(20, 18, 14, 0.74) !important;
+        }
+      `}</style>
+    </nav>
+  );
+}
