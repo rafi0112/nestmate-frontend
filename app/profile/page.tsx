@@ -123,7 +123,7 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Firebase & MongoDB status */}
+          {/* Firebase & MongoDB status
           <div style={{ background:'var(--success-light)', border:'1px solid var(--success)', borderRadius:14, padding:'20px 24px' }}>
             <h3 style={{ fontSize:15, fontWeight:700, marginBottom:8, color:'var(--success)', fontFamily:'Syne,serif', display:'flex', alignItems:'center', gap:8 }}>
               <CheckCircle size={15}/> Real Authentication & Database Active
@@ -133,7 +133,7 @@ export default function ProfilePage() {
               ✅ <strong>MongoDB Atlas</strong> — All listings and data stored in real database<br/>
               ✅ <strong>No Mock Data</strong> — 100% production-ready with live data
             </p>
-          </div>
+          </div> */}
         </div>
       </div>
 

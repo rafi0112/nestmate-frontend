@@ -87,7 +87,7 @@ export default function Navbar() {
                   {currentUser.displayName || currentUser.email?.split('@')[0]}
                 </span>
               </div>
-              <button onClick={logout} title="Log out"
+              <button onClick={logout} title="Log out" className="nav-desktop"
                 style={{ width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--border)', borderRadius: 7, background: 'transparent', cursor: 'pointer', color: 'var(--text-secondary)', transition: 'all 0.12s' }}
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--danger-light)'; (e.currentTarget as HTMLElement).style.color = 'var(--danger)'; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'var(--text-secondary)'; }}>
