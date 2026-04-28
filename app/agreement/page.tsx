@@ -182,36 +182,27 @@ export default function AgreementPage() {
   }, [household, currentUser?.email, isSigned, pendingMembers.length, reminderShown]);
 
   const markSigned = async () => {
-    if (!household || !currentUser?.email) return;
+    const email = currentUser?.email;
+    if (!household || !email) return;
     setSigning(true);
     try {
       await createNotification({
         householdId: household._id,
-        fromEmail: currentUser.email,
-        toEmail: currentUser.email,
+        fromEmail: email,
+        toEmail: email,
         type: 'agreement_signed',
         title: 'Agreement signed',
-        message: `${currentUser.displayName || currentUser.email} signed the roommate agreement.`,
+        message: `${currentUser.displayName || email} signed the roommate agreement.`,
       });
-
-      const reminderTargets = pendingMembers.filter(member => member !== currentUser.email);
-      await Promise.all(reminderTargets.map(member => createNotification({
-        householdId: household._id,
-        fromEmail: currentUser.email,
-        toEmail: member,
-        type: 'agreement_reminder',
-        title: 'Sign the roommate agreement',
-        message: `Please sign the roommate agreement for ${household.listingTitle}.`,
-      })));
 
       setNotifications(prev => [
         {
           householdId: household._id,
-          fromEmail: currentUser.email,
-          toEmail: currentUser.email,
+          fromEmail: email,
+          toEmail: email,
           type: 'agreement_signed',
           title: 'Agreement signed',
-          message: `${currentUser.displayName || currentUser.email} signed the roommate agreement.`,
+          message: `${currentUser.displayName || email} signed the roommate agreement.`,
           createdAt: new Date().toISOString(),
         },
         ...prev,
