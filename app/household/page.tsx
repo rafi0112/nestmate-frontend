@@ -126,7 +126,7 @@ function MealLedger({ hh, myEmail }: { hh: Household; myEmail: string }) {
       {adding ? (
         <div style={{ background:'var(--accent-light)', border:'1.5px solid var(--accent)', borderRadius:12, padding:20, marginBottom:18 }}>
           <p style={{ fontFamily:'Syne,serif', fontWeight:700, fontSize:14, marginBottom:14, color:'var(--accent)' }}>New Market Entry</p>
-          <div style={{ display:'grid', gridTemplateColumns:'1fr 120px 150px auto', gap:10, alignItems:'end' }}>
+          <div className="ledger-add-form" style={{ display:'grid', gridTemplateColumns:'1fr 120px 150px auto', gap:10, alignItems:'end' }}>
             <div>
               <label style={lbl}>Item / Description</label>
               <input value={form.item} onChange={e=>setForm(f=>({...f,item:e.target.value}))} placeholder="Rice, oil, vegetables…" style={inp} onFocus={focusAcc} onBlur={blurBorder} />
@@ -139,7 +139,7 @@ function MealLedger({ hh, myEmail }: { hh: Household; myEmail: string }) {
               <label style={lbl}>Date</label>
               <input type="date" value={form.date} onChange={e=>setForm(f=>({...f,date:e.target.value}))} style={inp} onFocus={focusAcc} onBlur={blurBorder} />
             </div>
-            <div style={{ display:'flex', gap:8, paddingBottom:1 }}>
+            <div className="ledger-add-actions" style={{ display:'flex', gap:8, paddingBottom:1, flexWrap:'wrap' }}>
               <button onClick={addEntry} style={{ display:'flex', alignItems:'center', gap:5, padding:'10px 16px', borderRadius:9, background:'var(--accent)', color:'#fff', border:'none', cursor:'pointer', fontFamily:'Syne,serif', fontWeight:700, fontSize:13 }}><Check size={13}/>Add</button>
               <button onClick={()=>setAdding(false)} style={{ padding:'10px 12px', borderRadius:9, border:'1px solid var(--border)', background:'var(--bg-subtle)', cursor:'pointer', color:'var(--text-muted)' }}><X size={13}/></button>
             </div>
@@ -373,23 +373,60 @@ function DailyMeals({ hh, myEmail }: { hh: Household; myEmail: string }) {
       {myLog.length===0 ? (
         <p style={{ textAlign:'center', padding:'30px 0', color:'var(--text-muted)', fontSize:14, fontStyle:'italic' }}>No meals logged yet.</p>
       ) : (
-        <div style={{ background:'var(--bg-card)', border:'1px solid var(--border)', borderRadius:12, overflow:'hidden' }}>
-          <div style={{ display:'grid', gridTemplateColumns:'1fr auto auto auto', padding:'10px 18px', background:'var(--bg-subtle)', borderBottom:'1px solid var(--border)' }}>
+        <div className="meal-history-wrap" style={{ background:'var(--bg-card)', border:'1px solid var(--border)', borderRadius:12, overflow:'hidden' }}>
+          <div className="meal-history-header" style={{ display:'grid', gridTemplateColumns:'1fr auto auto auto', padding:'10px 18px', background:'var(--bg-subtle)', borderBottom:'1px solid var(--border)' }}>
             {['Date','My Meals','Guests','Total Units'].map(h=>(
               <p key={h} style={{ fontSize:11, fontFamily:'Syne,serif', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.07em', color:'var(--text-muted)', textAlign:h!=='Date'?'center':'left' }}>{h}</p>
             ))}
           </div>
           {[...myLog].slice(0,14).map((m,i,arr)=>(
-            <div key={m._id} style={{ display:'grid', gridTemplateColumns:'1fr auto auto auto', padding:'12px 18px', borderBottom:i<arr.length-1?'1px solid var(--border)':'none', alignItems:'center' }}>
-              <p style={{ fontSize:13 }}>{new Date(m.date).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})}</p>
-              <p style={{ fontSize:14, fontWeight:700, color:'var(--accent)',   textAlign:'center', width:90 }}>{m.meals}</p>
-              <p style={{ fontSize:14, fontWeight:700, color:'var(--accent-2)', textAlign:'center', width:90 }}>{m.guests}</p>
-              <p style={{ fontSize:14, fontWeight:700, color:'var(--text-primary)', textAlign:'center', width:110 }}>{m.meals+m.guests}</p>
+            <div key={m._id} className="meal-history-row" style={{ display:'grid', gridTemplateColumns:'1fr auto auto auto', padding:'12px 18px', borderBottom:i<arr.length-1?'1px solid var(--border)':'none', alignItems:'center' }}>
+              <p className="meal-history-cell" data-label="Date" style={{ fontSize:13 }}>{new Date(m.date).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})}</p>
+              <p className="meal-history-cell" data-label="My Meals" style={{ fontSize:14, fontWeight:700, color:'var(--accent)',   textAlign:'center', width:90 }}>{m.meals}</p>
+              <p className="meal-history-cell" data-label="Guests" style={{ fontSize:14, fontWeight:700, color:'var(--accent-2)', textAlign:'center', width:90 }}>{m.guests}</p>
+              <p className="meal-history-cell" data-label="Total Units" style={{ fontSize:14, fontWeight:700, color:'var(--text-primary)', textAlign:'center', width:110 }}>{m.meals+m.guests}</p>
             </div>
           ))}
         </div>
       )}
-      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
+      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+        @media (max-width: 640px) {
+          .meal-history-header {
+            display: none !important;
+          }
+          .meal-history-row {
+            grid-template-columns: 1fr 1fr !important;
+            gap: 10px 12px;
+            padding: 14px 14px !important;
+            align-items: start !important;
+          }
+          .meal-history-cell {
+            width: auto !important;
+            text-align: left !important;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
+            font-size: 13px !important;
+          }
+          .meal-history-cell::before {
+            content: attr(data-label);
+            display: block;
+            font-size: 10px;
+            font-family: Syne,serif;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            color: var(--text-muted);
+          }
+          .meal-history-cell:first-child {
+            grid-column: 1 / -1;
+          }
+          .meal-history-cell:first-child::before {
+            margin-bottom: 2px;
+          }
+        }
+      `}</style>
     </div>
   );
 }
@@ -406,6 +443,8 @@ function FairShareSnapshot({ hh, myEmail }: { hh: Household; myEmail: string }) 
 
   const cutoff = new Date(); cutoff.setDate(cutoff.getDate()-30);
   const recentMeals = meals.filter(m=>new Date(m.date)>=cutoff);
+  const today = todayStr();
+  const todayMeals = meals.filter(m => m.date === today);
   const marketTotal = ledger.reduce((s,e)=>s+e.amount, 0);
   const totalAllUnits = recentMeals.reduce((s,m)=>s+m.meals+m.guests, 0);
   const myMeals = recentMeals.filter(m=>m.userEmail===myEmail);
@@ -414,6 +453,18 @@ function FairShareSnapshot({ hh, myEmail }: { hh: Household; myEmail: string }) 
   const members = getHouseholdMembers(hh);
   const perPersonFee = members.length > 0 ? hh.monthlyFee/members.length : 0;
   const totalDue = perPersonFee + mealShare;
+
+  const todayByEmail = new Map(todayMeals.map(meal => [meal.userEmail, meal]));
+  const todayBoard = members.map(member => {
+    const meal = todayByEmail.get(member);
+    return {
+      email: member,
+      meals: meal?.meals ?? 0,
+      guests: meal?.guests ?? 0,
+      total: (meal?.meals ?? 0) + (meal?.guests ?? 0),
+      logged: Boolean(meal),
+    };
+  });
 
   const memberStats = members.map(m=>{
     const mMeals = recentMeals.filter(me=>me.userEmail===m);
@@ -424,6 +475,39 @@ function FairShareSnapshot({ hh, myEmail }: { hh: Household; myEmail: string }) 
 
   return (
     <div>
+      <div style={{ background:'var(--bg-card)', border:'1px solid var(--border)', borderRadius:14, padding:'20px 22px', marginBottom:24, boxShadow:'var(--shadow-xs)' }}>
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:12, flexWrap:'wrap', marginBottom:12 }}>
+          <div>
+            <p style={{ fontFamily:'Syne,serif', fontWeight:700, fontSize:16, color:'var(--accent)', marginBottom:4 }}>Today’s Meal Board</p>
+            <p style={{ fontSize:13, color:'var(--text-secondary)' }}>Everyone can see who logged meals for today.</p>
+          </div>
+          <span style={{ padding:'6px 10px', borderRadius:999, background:'var(--accent-light)', color:'var(--accent)', fontSize:11, fontFamily:'Syne,serif', fontWeight:700, letterSpacing:'0.06em', textTransform:'uppercase' }}>{new Date().toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})}</span>
+        </div>
+        <div style={{ overflowX:'auto' }}>
+          <div style={{ minWidth:520, border:'1px solid var(--border)', borderRadius:12, overflow:'hidden' }}>
+            <div style={{ display:'grid', gridTemplateColumns:'1.3fr .75fr .75fr .75fr .9fr', padding:'10px 14px', background:'var(--bg-subtle)', borderBottom:'1px solid var(--border)' }}>
+              {['Member','Meals','Guests','Total','Status'].map(h=>(
+                <p key={h} style={{ fontSize:11, fontFamily:'Syne,serif', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.07em', color:'var(--text-muted)' }}>{h}</p>
+              ))}
+            </div>
+            {todayBoard.length===0 ? (
+              <div style={{ padding:'16px 14px', color:'var(--text-muted)', fontSize:13, fontStyle:'italic' }}>No household members found.</div>
+            ) : todayBoard.map((row,i)=> (
+              <div key={row.email} style={{ display:'grid', gridTemplateColumns:'1.3fr .75fr .75fr .75fr .9fr', gap:10, padding:'12px 14px', borderBottom:i<todayBoard.length-1?'1px solid var(--border)':'none', alignItems:'center', background:row.logged?'var(--accent-light)':'transparent' }}>
+                <div style={{ display:'flex', alignItems:'center', gap:10, minWidth:0 }}>
+                  <div style={{ width:30, height:30, borderRadius:'50%', background:row.logged?'var(--accent)':'var(--bg-subtle)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:12, fontWeight:700, color:row.logged?'#fff':'var(--text-secondary)', fontFamily:'Syne,serif', flexShrink:0 }}>{nameOf(row.email)[0]}</div>
+                  <p style={{ fontSize:14, fontWeight:600, color:'var(--text-primary)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{nameOf(row.email)}{row.email===myEmail?' (you)':''}</p>
+                </div>
+                <p style={{ fontSize:14, fontWeight:700, color:'var(--accent)', textAlign:'center' }}>{row.meals}</p>
+                <p style={{ fontSize:14, fontWeight:700, color:'var(--accent-2)', textAlign:'center' }}>{row.guests}</p>
+                <p style={{ fontSize:14, fontWeight:700, color:'var(--text-primary)', textAlign:'center' }}>{row.total}</p>
+                <p style={{ fontSize:12, fontWeight:700, color:row.logged?'var(--success)':'var(--text-muted)', textAlign:'right', fontFamily:'Syne,serif' }}>{row.logged?'Logged':'Pending'}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
       <div style={{ background:'var(--bg-card)', border:'1px solid var(--border)', borderRadius:14, padding:'24px 26px', marginBottom:24, borderLeft:'4px solid var(--accent)' }}>
         <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:18 }}>
           <TrendingUp size={18} style={{ color:'var(--accent)' }}/>
@@ -470,6 +554,19 @@ function FairShareSnapshot({ hh, myEmail }: { hh: Household; myEmail: string }) 
           </div>
         ))}
       </div>
+      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+        @media (max-width: 640px) {
+          .ledger-add-form {
+            grid-template-columns: 1fr !important;
+          }
+          .ledger-add-actions {
+            width: 100%;
+          }
+          .ledger-add-actions button {
+            flex: 1 1 120px;
+          }
+        }
+      `}</style>
     </div>
   );
 }
