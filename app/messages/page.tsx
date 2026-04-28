@@ -243,7 +243,7 @@ function MessagesPageContent() {
         </div>
       </div>
 
-      <div style={{display:'flex',height:650,background:'var(--bg-card)',border:'1px solid var(--border)',borderRadius:18,overflow:'hidden',boxShadow:'var(--shadow-md)'}}>
+      <div className="msg-shell" style={{display:'flex',height:650,background:'var(--bg-card)',border:'1px solid var(--border)',borderRadius:18,overflow:'hidden',boxShadow:'var(--shadow-md)'}}>
         {/* Sidebar */}
         <div style={{width:300,flexShrink:0,borderRight:'1px solid var(--border)',display:'flex',flexDirection:'column',background:'var(--bg)'}} className={`msg-sidebar${mobileView==='chat'?' msg-hidden':''}`}>
           <div style={{padding:'16px 16px 12px',borderBottom:'1px solid var(--border)'}}>
@@ -299,7 +299,7 @@ function MessagesPageContent() {
         </div>
 
         {/* Chat */}
-        <div style={{flex:1,display:'flex',flexDirection:'column'}} className={`msg-chat${mobileView==='list'&&!selected?' msg-hidden-mobile':''}`}>
+        <div style={{flex:1,display:'flex',flexDirection:'column',minHeight:0}} className={`msg-chat${mobileView==='list'&&!selected?' msg-hidden-mobile':''}`}>
           {!selectedConv ? (
             <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',color:'var(--text-muted)',gap:14,padding:32,textAlign:'center'}}>
               <div style={{width:80,height:80,borderRadius:'50%',background:'var(--bg-subtle)',border:'2px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'center'}}>
@@ -399,11 +399,16 @@ function MessagesPageContent() {
 
       <style>{`
         @media(max-width:640px){
-          .msg-sidebar{width:100%!important;}
+          .msg-shell{flex-direction:column!important;height:auto!important;}
+          .msg-sidebar{width:100%!important;border-right:none!important;border-bottom:1px solid var(--border)!important;}
+          .msg-chat{width:100%!important;min-height:320px!important;height:auto!important;}
           .msg-hidden{display:none!important;}
           .msg-back-btn{display:flex!important;}
           .msg-hidden-mobile{display:none!important;}
         }
+        /* ensure scroll areas behave when stacked */
+        .msg-sidebar > div[style*="flex:1"]{max-height:50vh;overflow:auto}
+        .msg-chat > div[style*="flex:1"]{max-height:60vh;overflow:auto}
       `}</style>
     </div>
   );

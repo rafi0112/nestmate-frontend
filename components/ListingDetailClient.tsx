@@ -69,9 +69,9 @@ export default function ListingDetailClient({ listing, similar }: Props) {
         <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{listing.title}</span>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 32, alignItems: 'start' }}>
+      <div className="listing-layout" style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 32, alignItems: 'start' }}>
         {/* Main content */}
-        <div>
+        <div className="listing-main">
           {/* Hero image */}
           <div style={{ borderRadius: 20, overflow: 'hidden', marginBottom: 28, position: 'relative', aspectRatio: '16/7', background: 'var(--bg-subtle)' }}>
             <img
@@ -164,7 +164,7 @@ export default function ListingDetailClient({ listing, similar }: Props) {
         )}
 
         {/* Sidebar */}
-        <div style={{ position: 'sticky', top: 84 }}>
+        <div className="listing-sidebar" style={{ position: 'sticky', top: 84 }}>
           {/* Poster card */}
           <div className="card" style={{ padding: 24, marginBottom: 16 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20, paddingBottom: 20, borderBottom: '1px solid var(--border)' }}>
@@ -267,11 +267,20 @@ export default function ListingDetailClient({ listing, similar }: Props) {
         .similar-mobile { display: none; }
         .similar-desktop { display: block; }
         @media (max-width: 768px) {
-          div[style*="grid-template-columns: 1fr 340px"] {
-            grid-template-columns: 1fr !important;
+          .listing-layout {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 24px !important;
           }
-          div[style*="position: sticky"] {
-            position: static !important;
+          .listing-main,
+          .listing-sidebar,
+          .similar-mobile {
+            width: 100% !important;
+          }
+          .listing-main { order: 1; }
+          .listing-sidebar { order: 2; position: static !important; }
+          .similar-mobile { order: 3; }
+          .listing-sidebar {
           }
           .similar-desktop { display: none !important; }
           .similar-mobile { display: block !important; }
