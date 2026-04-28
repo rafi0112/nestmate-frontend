@@ -480,23 +480,26 @@ function RoomChat({ hh, myEmail, myName }: { hh: Household; myEmail: string; myN
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
   const [replyTarget, setReplyTarget] = useState<ChatMsg|null>(null);
-  const endRef = useRef<HTMLDivElement>(null);
+  const messagesRef = useRef<HTMLDivElement>(null);
   const pollRef = useRef<ReturnType<typeof setInterval>|null>(null);
   const latestRef = useRef<string|undefined>(undefined);
+
+  const mergeMessages = (prev: ChatMsg[], next: ChatMsg[]) => {
+    const byId = new Map<string, ChatMsg>();
+    [...prev, ...next].forEach(msg => {
+      byId.set(msg._id, msg);
+    });
+    return Array.from(byId.values()).sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+  };
 
   const loadChat = useCallback(async (silent=false) => {
     try {
       const data = await getRoomChat(hh._id, latestRef.current);
       if (data.length > 0) {
-        latestRef.current = data[data.length-1].timestamp;
         setMessages(prev => {
-          const merged = silent ? [...prev, ...data] : data;
-          const seen = new Set<string>();
-          return merged.filter((msg: ChatMsg) => {
-            if (seen.has(msg._id)) return false;
-            seen.add(msg._id);
-            return true;
-          });
+          const merged = mergeMessages(prev, data);
+          latestRef.current = merged[merged.length - 1]?.timestamp;
+          return merged;
         });
       }
     } catch { if (!silent) toast.error('Could not load chat'); }
@@ -508,7 +511,11 @@ function RoomChat({ hh, myEmail, myName }: { hh: Household; myEmail: string; myN
     return ()=>{ if (pollRef.current) clearInterval(pollRef.current); };
   }, [loadChat]);
 
-  useEffect(() => { endRef.current?.scrollIntoView({ behavior:'smooth' }); }, [messages]);
+  useEffect(() => {
+    const el = messagesRef.current;
+    if (!el) return;
+    el.scrollTop = el.scrollHeight;
+  }, [messages]);
 
   const send = async () => {
     if (!text.trim() || sending) return;
@@ -529,7 +536,7 @@ function RoomChat({ hh, myEmail, myName }: { hh: Household; myEmail: string; myN
         <p style={{ fontFamily:'Syne,serif', fontWeight:700, fontSize:14, color:'var(--text-primary)' }}>Room Chat</p>
         <span style={{ marginLeft:'auto', fontSize:11, color:'var(--text-muted)', fontStyle:'italic' }}>Live · syncs every 5s</span>
       </div>
-      <div style={{ flex:1, overflowY:'auto', padding:'16px 20px', display:'flex', flexDirection:'column', gap:12 }}>
+      <div ref={messagesRef} style={{ flex:1, overflowY:'auto', padding:'16px 20px', display:'flex', flexDirection:'column', gap:12 }}>
         {messages.length===0 && <div style={{ textAlign:'center', color:'var(--text-muted)', fontSize:13, fontStyle:'italic', paddingTop:40 }}>No messages yet. Start the conversation!</div>}
         {messages.map(m => {
           const isMe = m.senderEmail===myEmail;
@@ -557,7 +564,6 @@ function RoomChat({ hh, myEmail, myName }: { hh: Household; myEmail: string; myN
             </div>
           );
         })}
-        <div ref={endRef}/>
       </div>
       <div style={{ padding:'12px 16px', borderTop:'1px solid var(--border)', display:'flex', gap:10, alignItems:'center' }}>
         <div style={{ flex:1 }}>

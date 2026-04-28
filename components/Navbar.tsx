@@ -68,7 +68,7 @@ export default function Navbar() {
         </div>
 
         {/* Right controls */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 12 }}>
+        <div className="nav-right-controls" style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 12 }}>
 
           {/* Theme toggle */}
           <button onClick={toggleTheme} title={theme === 'dark' ? 'Switch to light' : 'Switch to dark'}
@@ -106,16 +106,22 @@ export default function Navbar() {
           )}
 
           {/* Mobile hamburger */}
-          <button onClick={() => setOpen(!open)} className="nav-mobile-btn"
+          <button
+            onClick={() => setOpen(!open)}
+            className="nav-mobile-btn"
+            aria-label={open ? 'Close navigation menu' : 'Open navigation menu'}
+            aria-expanded={open}
             style={{ width: 32, height: 32, border: '1px solid var(--border)', borderRadius: 7, background: 'var(--bg-subtle)', cursor: 'pointer', display: 'none', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>
             {open ? <X size={15} /> : <Menu size={15} />}
           </button>
         </div>
       </div>
 
+      {open && <button aria-label="Close navigation backdrop" className="nav-mobile-backdrop" onClick={() => setOpen(false)} />}
+
       {/* Mobile menu drawer */}
       {open && (
-        <div className="nav-mobile-drawer" style={{ background: 'rgba(255,255,255,0.76)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', borderTop: '1px solid var(--border)', padding: '12px 20px 20px' }}>
+        <div className="nav-mobile-drawer" style={{ background: 'rgba(255,255,255,0.82)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderTop: '1px solid var(--border)', padding: '12px 20px 20px' }}>
           {NAV.map(({ href, label, icon: Icon, auth }) => {
             if (auth && !currentUser) return null;
             const active = pathname === href;
@@ -144,12 +150,32 @@ export default function Navbar() {
         @media (max-width: 900px) {
           .nav-desktop { display: none !important; }
           .nav-mobile-btn { display: flex !important; }
-        }
-        .nav-mobile-drawer {
-          box-shadow: var(--shadow-lg);
+          .nav-right-controls { margin-left: auto !important; }
+          .nav-mobile-drawer {
+            position: fixed;
+            left: 0;
+            right: 0;
+            top: 62px;
+            z-index: 210;
+            border-bottom: 1px solid var(--border);
+            box-shadow: var(--shadow-xl);
+          }
+          .nav-mobile-backdrop {
+            position: fixed;
+            inset: 62px 0 0 0;
+            z-index: 205;
+            border: 0;
+            padding: 0;
+            background: rgba(247, 245, 241, 0.14);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+          }
         }
         [data-theme='dark'] .nav-mobile-drawer {
           background: rgba(20, 18, 14, 0.74) !important;
+        }
+        [data-theme='dark'] .nav-mobile-backdrop {
+          background: rgba(14, 13, 11, 0.2);
         }
       `}</style>
     </nav>

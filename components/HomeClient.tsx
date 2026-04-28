@@ -264,7 +264,7 @@ export default function HomeClient({ listings }: Props) {
               {filteredListings.map((listing) => <ListingCard key={listing._id} listing={listing} />)}
             </div>
 
-            {households.length > 0 && (
+            {/* {households.length > 0 && (
               <div style={{ marginTop: '24px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
                   <h3 style={{ margin: 0, fontFamily: "'Times New Roman', Times, serif", fontSize: 'clamp(16px,4vw,20px)', fontWeight: 800 }}>Households</h3>
@@ -286,7 +286,7 @@ export default function HomeClient({ listings }: Props) {
                   ))}
                 </div>
               </div>
-            )}
+            )} */}
           </>
         )}
       </section>
