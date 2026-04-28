@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Send, Search, ArrowLeft, Clock, CheckCheck, MessageSquare, RefreshCw, Wifi, WifiOff, Plus } from 'lucide-react';
-import { getConversations, sendMessage as sendMessageApi } from '@/lib/api';
+import { getConversations, sendMessage as sendMessageApi, getHousehold, joinHousehold } from '@/lib/api';
 import toast from 'react-hot-toast';
 
 interface DBMessage {
@@ -88,6 +88,9 @@ function MessagesPageContent() {
   const draftListingTitle = searchParams.get('listingTitle') || 'Listing';
   const draftOwnerName = searchParams.get('ownerName') || draftToEmail.split('@')[0];
   const hasDraftTarget = Boolean(draftToEmail && draftListingId);
+  const [householdForDraft, setHouseholdForDraft] = useState<any|null>(null);
+  const [joinCodeInput, setJoinCodeInput] = useState('');
+  const [joining, setJoining] = useState(false);
 
   const fetchConversations = useCallback(async (silent=false) => {
     if (!currentUser?.email) return;
@@ -126,6 +129,23 @@ function MessagesPageContent() {
     return () => { if (pollRef.current) clearInterval(pollRef.current); };
   }, [fetchConversations]);
 
+  // If user arrived from a listing, try to fetch the household info for a quick join
+  useEffect(() => {
+    if (!hasDraftTarget) return;
+    let mounted = true;
+    (async () => {
+      try {
+        const data = await getHousehold(draftListingId);
+        if (!mounted) return;
+        // backend returns null or array/object; handle either
+        if (data && Array.isArray(data) && data.length>0) setHouseholdForDraft(data[0]);
+        else if (data && typeof data === 'object') setHouseholdForDraft(data);
+        else setHouseholdForDraft(null);
+      } catch { setHouseholdForDraft(null); }
+    })();
+    return () => { mounted = false; };
+  }, [hasDraftTarget, draftListingId]);
+
   const handleSend = async () => {
     if (!newMessage.trim() || !selected || !currentUser?.email) return;
     const conv = conversations.find(c => c.id === selected);
@@ -144,6 +164,24 @@ function MessagesPageContent() {
       setTimeout(() => fetchConversations(true), 600);
     } catch { toast.error('Failed to send message'); }
     finally { setSending(false); inputRef.current?.focus(); }
+  };
+
+  const handleJoinByCode = async (code?: string) => {
+    if (!currentUser?.email) return toast.error('Sign in to join rooms');
+    const joinCode = (code || joinCodeInput || '').toString().trim().toUpperCase();
+    if (!joinCode) return toast.error('Enter a join code');
+    setJoining(true);
+    try {
+      const res = await joinHousehold(joinCode, currentUser.email, currentUser.uid);
+      if (res && !res.error) {
+        toast.success('Joined room successfully');
+        setJoinCodeInput('');
+      } else {
+        toast.error(res?.error || 'Failed to join room');
+      }
+    } catch {
+      toast.error('Failed to join room');
+    } finally { setJoining(false); }
   };
 
   const selectConv = (id: string) => {
@@ -181,6 +219,27 @@ function MessagesPageContent() {
           <button onClick={()=>fetchConversations()} style={{background:'none',border:'none',cursor:'pointer',color:'var(--accent)',display:'flex',alignItems:'center',gap:4,fontSize:13,padding:'2px 6px',borderRadius:6,fontFamily:'Times New Roman,serif'}}>
             <RefreshCw size={12}/> Refresh
           </button>
+        </div>
+        {/* Quick join box (mobile-friendly) */}
+        <div style={{marginTop:12,display:'flex',gap:10,flexWrap:'wrap',alignItems:'center'}}>
+          <div style={{display:'flex',gap:8,alignItems:'center',flex:1,minWidth:220}}>
+            <input placeholder="Join room by code" value={joinCodeInput} onChange={e=>setJoinCodeInput(e.target.value)}
+              style={{flex:1,padding:'10px 12px',borderRadius:8,border:'1.5px solid var(--border)',background:'var(--bg-card)',fontSize:13,outline:'none'}}/>
+            <button onClick={()=>handleJoinByCode()} disabled={joining}
+              style={{padding:'10px 14px',borderRadius:8,background:joining?'var(--border)':'var(--accent)',color:'#fff',border:'none',fontWeight:700}}>Join</button>
+          </div>
+          {hasDraftTarget && (
+            <div style={{display:'flex',gap:8,alignItems:'center'}}>
+              <span style={{fontSize:13,color:'var(--text-muted)'}}>This message links to:</span>
+              <Link href={`/listings/${draftListingId}`} style={{fontSize:13,color:'var(--accent)',fontWeight:700}}>Listing</Link>
+              {householdForDraft ? (
+                <button onClick={()=>handleJoinByCode(householdForDraft.joinCode)} disabled={joining}
+                  style={{padding:'8px 12px',borderRadius:8,background:'var(--accent-2)',color:'#fff',border:'none',fontWeight:700}}>Join listing's room</button>
+              ) : (
+                <span style={{fontSize:12,color:'var(--text-muted)'}}>No room created yet</span>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

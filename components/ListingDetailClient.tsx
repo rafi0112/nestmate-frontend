@@ -150,16 +150,18 @@ export default function ListingDetailClient({ listing, similar }: Props) {
             </div>
           </div>
 
-          {/* Similar listings */}
-          {similar.length > 0 && (
-            <div style={{ marginTop: 40 }}>
-              <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 20 }}>Similar listings nearby</h2>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>
-                {similar.map(l => <ListingCard key={l._id} listing={l} />)}
-              </div>
-            </div>
-          )}
+          {/* Similar listings (moved below sidebar for mobile ordering) */}
         </div>
+
+        {/* Similar listings (desktop placement) */}
+        {similar.length > 0 && (
+          <div className="similar-desktop" style={{ marginTop: 40 }}>
+            <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 20 }}>Similar listings nearby</h2>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>
+              {similar.map(l => <ListingCard key={l._id} listing={l} />)}
+            </div>
+          </div>
+        )}
 
         {/* Sidebar */}
         <div style={{ position: 'sticky', top: 84 }}>
@@ -251,7 +253,19 @@ export default function ListingDetailClient({ listing, similar }: Props) {
         </div>
       </div>
 
+      {/* Similar listings (mobile placement) */}
+      {similar.length > 0 && (
+        <div className="similar-mobile" style={{ marginTop: 40 }}>
+          <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 20 }}>Similar listings nearby</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>
+            {similar.map(l => <ListingCard key={l._id} listing={l} />)}
+          </div>
+        </div>
+      )}
+
       <style>{`
+        .similar-mobile { display: none; }
+        .similar-desktop { display: block; }
         @media (max-width: 768px) {
           div[style*="grid-template-columns: 1fr 340px"] {
             grid-template-columns: 1fr !important;
@@ -259,6 +273,8 @@ export default function ListingDetailClient({ listing, similar }: Props) {
           div[style*="position: sticky"] {
             position: static !important;
           }
+          .similar-desktop { display: none !important; }
+          .similar-mobile { display: block !important; }
         }
       `}</style>
     </div>
