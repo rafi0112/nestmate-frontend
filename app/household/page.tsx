@@ -9,7 +9,7 @@ import {
   TrendingUp, AlertCircle, Check, UserPlus, RefreshCw, Loader2, Home
 } from 'lucide-react';
 import {
-  getHouseholdByMember, createHousehold, joinHousehold, updateHousehold,
+  createNotification, getHouseholdByMember, getNotifications, createHousehold, joinHousehold,
   getLedger, addLedgerEntry, deleteLedgerEntry,
   getMeals, upsertMeal,
   getPayments, createPayment,
@@ -18,6 +18,16 @@ import {
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 interface Household { _id: string; listingId: string; listingTitle: string; joinCode: string; members?: string[]; memberUids?: string[]; monthlyFee: number; ownerEmail: string; }
+interface HouseholdNotification {
+  _id?: string;
+  householdId?: string;
+  fromEmail?: string;
+  toEmail?: string;
+  type?: string;
+  title?: string;
+  message?: string;
+  createdAt?: string;
+}
 interface LedgerEntry { _id: string; householdId: string; item: string; amount: number; date: string; paidBy: string; }
 interface MealEntry   { _id: string; householdId: string; userEmail: string; date: string; meals: number; guests: number; }
 interface Payment     { _id: string; householdId: string; fromEmail: string; toEmail: string; amount: number; note: string; date: string; }
@@ -536,21 +546,26 @@ function FairShareSnapshot({ hh, myEmail }: { hh: Household; myEmail: string }) 
       </div>
 
       <h3 style={{ fontSize:15, fontWeight:700, marginBottom:14, fontFamily:'Syne,serif', color:'var(--text-secondary)' }}>Household Comparison</h3>
-      <div style={{ background:'var(--bg-card)', border:'1px solid var(--border)', borderRadius:12, overflow:'hidden' }}>
-        <div style={{ display:'grid', gridTemplateColumns:'1fr auto auto auto', padding:'10px 18px', background:'var(--bg-subtle)', borderBottom:'1px solid var(--border)' }}>
-          {['Member','Meal Units','Market Share','Total Due'].map(h=>(
-            <p key={h} style={{ fontSize:11, fontFamily:'Syne,serif', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.07em', color:'var(--text-muted)', textAlign:h!=='Member'?'right':'left' }}>{h}</p>
+      <div className="household-compare-wrap" style={{ background:'var(--bg-card)', border:'1px solid var(--border)', borderRadius:12, overflow:'hidden' }}>
+        <div className="household-compare-header" style={{ display:'grid', gridTemplateColumns:'1fr auto auto auto 1fr', padding:'10px 18px', background:'var(--bg-subtle)', borderBottom:'1px solid var(--border)', gap:12 }}>
+          {['Member','Meal Units','Market Share','Total Due','Details'].map(h=>(
+            <p key={h} style={{ fontSize:11, fontFamily:'Syne,serif', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.07em', color:'var(--text-muted)', textAlign:h==='Member'?'left':h==='Details'?'left':'right' }}>{h}</p>
           ))}
         </div>
         {memberStats.map((m,i)=>(
-          <div key={m.email} style={{ display:'grid', gridTemplateColumns:'1fr auto auto auto', padding:'13px 18px', borderBottom:i<memberStats.length-1?'1px solid var(--border)':'none', background:m.email===myEmail?'var(--accent-light)':'transparent', alignItems:'center' }}>
-            <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+          <div key={m.email} className="household-compare-row" style={{ display:'grid', gridTemplateColumns:'1fr auto auto auto 1fr', padding:'13px 18px', borderBottom:i<memberStats.length-1?'1px solid var(--border)':'none', background:m.email===myEmail?'var(--accent-light)':'transparent', alignItems:'center', gap:12 }}>
+            <div className="household-compare-cell" data-label="Member" style={{ display:'flex', alignItems:'center', gap:10, minWidth:0 }}>
               <div style={{ width:30, height:30, borderRadius:'50%', background:m.email===myEmail?'var(--accent)':'var(--bg-subtle)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:12, fontWeight:700, color:m.email===myEmail?'#fff':'var(--text-secondary)', fontFamily:'Syne,serif' }}>{nameOf(m.email)[0]}</div>
               <p style={{ fontSize:14, fontWeight:m.email===myEmail?700:500, color:'var(--text-primary)' }}>{nameOf(m.email)}{m.email===myEmail?' (you)':''}</p>
             </div>
-            <p style={{ fontSize:14, fontWeight:700, color:'var(--accent)',   textAlign:'right', paddingRight:24, width:110 }}>{m.units}</p>
-            <p style={{ fontSize:14, fontWeight:700, color:'var(--accent-2)', textAlign:'right', paddingRight:24, width:120 }}>৳{m.share.toFixed(0)}</p>
-            <p style={{ fontSize:14, fontWeight:700, color:'var(--text-primary)', textAlign:'right', width:120 }}>৳{(perPersonFee+m.share).toFixed(0)}</p>
+            <p className="household-compare-cell" data-label="Meal Units" style={{ fontSize:14, fontWeight:700, color:'var(--accent)', textAlign:'right', paddingRight:24, width:110 }}>{m.units}</p>
+            <p className="household-compare-cell" data-label="Market Share" style={{ fontSize:14, fontWeight:700, color:'var(--accent-2)', textAlign:'right', paddingRight:24, width:120 }}>৳{m.share.toFixed(0)}</p>
+            <p className="household-compare-cell" data-label="Total Due" style={{ fontSize:14, fontWeight:700, color:'var(--text-primary)', textAlign:'right', width:120 }}>৳{(perPersonFee+m.share).toFixed(0)}</p>
+            <div className="household-compare-cell" data-label="Details" style={{ minWidth:0 }}>
+              <p style={{ fontSize:12, color:'var(--text-secondary)', lineHeight:1.5, textAlign:'left' }}>
+                Meal units and market share for the last 30 days.
+              </p>
+            </div>
           </div>
         ))}
       </div>
@@ -564,6 +579,37 @@ function FairShareSnapshot({ hh, myEmail }: { hh: Household; myEmail: string }) 
           }
           .ledger-add-actions button {
             flex: 1 1 120px;
+          }
+          .household-compare-header {
+            display: none !important;
+          }
+          .household-compare-row {
+            grid-template-columns: 1fr !important;
+            gap: 10px !important;
+            padding: 14px 14px !important;
+            align-items: start !important;
+          }
+          .household-compare-cell {
+            width: 100% !important;
+            text-align: left !important;
+            padding-right: 0 !important;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
+          }
+          .household-compare-cell::before {
+            content: attr(data-label);
+            display: block;
+            font-size: 10px;
+            font-family: Syne,serif;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            color: var(--text-muted);
+          }
+          .household-compare-cell p {
+            margin: 0;
           }
         }
       `}</style>
@@ -696,6 +742,7 @@ export default function HouseholdPage() {
   const [joinCode, setJoinCode] = useState('');
   const [creating, setCreating] = useState(false);
   const [createForm, setCreateForm] = useState({ listingTitle:'', monthlyFee:'' });
+  const [notifications, setNotifications] = useState<HouseholdNotification[]>([]);
 
   const myName = currentUser?.displayName || currentUser?.email?.split('@')[0] || 'You';
 
@@ -706,6 +753,16 @@ export default function HouseholdPage() {
       .catch(()=>setHh(null))
       .finally(()=>setLoading(false));
   }, [currentUser]);
+
+  useEffect(() => {
+    if (!hh?._id) {
+      setNotifications([]);
+      return;
+    }
+    getNotifications({ householdId: hh._id })
+      .then(items => setNotifications(Array.isArray(items) ? items as HouseholdNotification[] : []))
+      .catch(() => setNotifications([]));
+  }, [hh?._id]);
 
   const handleCreate = async () => {
     if (!createForm.listingTitle.trim()) return toast.error('Enter a household name');
@@ -723,6 +780,14 @@ export default function HouseholdPage() {
     try {
       const h = await joinHousehold(joinCode, currentUser!.email!);
       if (h.error) throw new Error(h.error);
+      await createNotification({
+        householdId: h._id,
+        fromEmail: currentUser!.email!,
+        toEmail: currentUser!.email!,
+        type: 'agreement_reminder',
+        title: 'Sign roommate agreement',
+        message: `You joined ${h.listingTitle}. Please sign the roommate agreement.`,
+      });
       setHh(h); setJoinModal(false);
       toast.success('Joined household!');
     } catch (e: unknown) { toast.error(e instanceof Error ? e.message : 'Invalid code'); }
@@ -749,6 +814,14 @@ export default function HouseholdPage() {
   );
 
   const members = getHouseholdMembers(hh);
+  const signedMembers = Array.from(new Set(
+    notifications
+      .filter(item => item.type === 'agreement_signed')
+      .map(item => item.fromEmail || item.toEmail)
+      .filter((email): email is string => Boolean(email))
+  ));
+  const pendingAgreementMembers = members.filter(member => !signedMembers.includes(member));
+  const myAgreementSigned = Boolean(currentUser?.email && signedMembers.includes(currentUser.email));
 
   // No household yet
   if (!hh) return (
@@ -848,6 +921,33 @@ export default function HouseholdPage() {
             </div>
           </div>
         </div>
+
+        {hh && (
+          <div style={{ marginTop:20, padding:'16px 18px', borderRadius:14, border:`1px solid ${pendingAgreementMembers.length > 0 ? 'var(--danger)' : 'var(--success)'}`, background: pendingAgreementMembers.length > 0 ? 'var(--danger-light)' : 'var(--success-light)', display:'flex', alignItems:'center', justifyContent:'space-between', gap:16, flexWrap:'wrap' }}>
+            <div style={{ minWidth:0 }}>
+              <p style={{ fontFamily:'Syne,serif', fontWeight:700, color: pendingAgreementMembers.length > 0 ? 'var(--danger)' : 'var(--success)', marginBottom:4 }}>Agreement signature reminder</p>
+              <p style={{ fontSize:13, color:'var(--text-secondary)', lineHeight:1.6 }}>
+                {pendingAgreementMembers.length > 0
+                  ? `${pendingAgreementMembers.length} roommate(s) still need to sign the agreement. New roommates will see this reminder until they acknowledge it.`
+                  : 'Everyone in this household has signed the agreement.'}
+              </p>
+            </div>
+            <div style={{ display:'flex', gap:10, flexWrap:'wrap' }}>
+              <Link href="/agreement" style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', gap:8, padding:'10px 16px', borderRadius:10, border:'none', background:'var(--accent)', color:'#fff', fontFamily:'Syne,serif', fontWeight:700 }}>
+                Open Agreement
+              </Link>
+              {myAgreementSigned ? (
+                <span style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', padding:'10px 16px', borderRadius:10, border:'1px solid var(--success)', background:'var(--success-light)', color:'var(--success)', fontFamily:'Syne,serif', fontWeight:700 }}>
+                  Signed by you
+                </span>
+              ) : (
+                <span style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', padding:'10px 16px', borderRadius:10, border:'1px solid var(--border)', background:'var(--bg-card)', color:'var(--text-muted)', fontFamily:'Syne,serif', fontWeight:700 }}>
+                  Pending your signature
+                </span>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Members list */}
         <div style={{ marginTop:20, paddingTop:18, borderTop:'1px solid var(--border)', display:'flex', gap:8, flexWrap:'wrap', alignItems:'center' }}>

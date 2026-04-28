@@ -74,6 +74,30 @@ export const updateHousehold = (id: string, data: { monthlyFee?: number; listing
 export const joinHousehold = (joinCode: string, userEmail: string, userUid?: string) =>
   apiFetch(`${API}/groups/join`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ joinCode, userEmail, userUid: userUid || userEmail }) });
 
+// ─── Notifications ─────────────────────────────────────────────────────────
+export type NotificationPayload = {
+  householdId?: string;
+  fromEmail?: string;
+  toEmail?: string;
+  type: string;
+  title: string;
+  message: string;
+  read?: boolean;
+};
+
+export const getNotifications = (filters: { userEmail?: string; householdId?: string; type?: string } = {}) => {
+  const params = new URLSearchParams();
+  if (filters.userEmail) params.set('userEmail', filters.userEmail);
+  if (filters.householdId) params.set('householdId', filters.householdId);
+  if (filters.type) params.set('type', filters.type);
+  const q = params.toString();
+  return apiFetch(`${API}/notifications${q ? `?${q}` : ''}`).catch(() => []);
+};
+
+export const createNotification = (payload: NotificationPayload) =>
+  apiFetch(`${API}/notifications`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) })
+    .catch(() => null);
+
 // ─── Ledger ──────────────────────────────────────────────────────────────────
 export const getLedger = (householdId: string) =>
   apiFetch(`${API}/ledger?householdId=${householdId}`);
