@@ -368,6 +368,7 @@ function MessagesPageContent() {
                   </div>
                   <p style={{fontSize:11,color:'var(--accent)',marginBottom:3,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',fontStyle:'italic'}}>{conv.listingTitle}</p>
                   <p style={{fontSize:12,color:conv.unread>0?'var(--text-primary)':'var(--text-muted)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',fontWeight:conv.unread>0?600:400}}>{conv.lastMessage||'—'}</p>
+                  {conv.unread>0 && <p style={{fontSize:10,color:'var(--accent)',marginTop:4,fontWeight:700}}>{conv.unread} unread message{conv.unread>1?'s':''}</p>}
                 </div>
               </button>
             ))}
@@ -397,7 +398,7 @@ function MessagesPageContent() {
             <>
               {/* Header */}
               <div style={{padding:'14px 20px',borderBottom:'1px solid var(--border)',display:'flex',alignItems:'center',gap:12,background:'var(--bg-card)',flexShrink:0}}>
-                <button onClick={()=>setMobileView('list')} className="msg-back-btn" style={{background:'none',border:'none',cursor:'pointer',color:'var(--text-muted)',display:'none',padding:4,borderRadius:6}}>
+                <button onClick={()=>{setMobileView('list');setSelected(null);}} className="msg-back-btn" style={{background:'none',border:'none',cursor:'pointer',color:'var(--text-muted)',display:'none',padding:4,borderRadius:6,transition:'color 0.15s'}} onMouseEnter={e=>(e.currentTarget.style.color='var(--accent)')} onMouseLeave={e=>(e.currentTarget.style.color='var(--text-muted)')}>
                   <ArrowLeft size={18}/>
                 </button>
                 <div style={{width:40,height:40,borderRadius:'50%',background:'var(--accent)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:15,fontWeight:700,color:'#fff',fontFamily:'Syne,serif',flexShrink:0}}>
@@ -443,7 +444,7 @@ function MessagesPageContent() {
                           </div>
                         )}
                         <div style={{maxWidth:'68%'}}>
-                          <div style={{padding:'10px 15px',lineHeight:1.55,fontSize:14,...(isMe?{background:'var(--accent)',color:'#fff',borderRadius:'18px 18px 4px 18px'}:{background:'var(--bg-subtle)',color:'var(--text-primary)',border:'1px solid var(--border)',borderRadius:'18px 18px 18px 4px'})}}>
+                          <div style={{padding:'10px 15px',lineHeight:1.55,fontSize:14,fontWeight:!isMe&&!msg.read?700:400,...(isMe?{background:'var(--accent)',color:'#fff',borderRadius:'18px 18px 4px 18px'}:{background:!msg.read?'var(--accent-light)':'var(--bg-subtle)',color:!msg.read?'var(--accent)':'var(--text-primary)',border:`1px solid ${!msg.read?'var(--accent)':'var(--border)'}`,borderRadius:'18px 18px 18px 4px'})}}>
                             {msg.text}
                           </div>
                           <div style={{display:'flex',alignItems:'center',gap:4,marginTop:4,justifyContent:isMe?'flex-end':'flex-start'}}>
@@ -479,16 +480,20 @@ function MessagesPageContent() {
 
       <style>{`
         @media(max-width:640px){
-          .msg-shell{flex-direction:column!important;height:auto!important;}
-          .msg-sidebar{width:100%!important;border-right:none!important;border-bottom:1px solid var(--border)!important;}
-          .msg-chat{width:100%!important;min-height:320px!important;height:auto!important;}
+          .msg-shell{flex-direction:column!important;height:auto!important;max-height:100vh!important;}
+          .msg-sidebar{width:100%!important;border-right:none!important;border-bottom:1px solid var(--border)!important;max-height:50vh!important;}
+          .msg-chat{width:100%!important;min-height:50vh!important;height:auto!important;display:flex!important;flex-direction:column!important;}
           .msg-hidden{display:none!important;}
           .msg-back-btn{display:flex!important;}
           .msg-hidden-mobile{display:none!important;}
         }
-        /* ensure scroll areas behave when stacked */
-        .msg-sidebar > div[style*="flex:1"]{max-height:50vh;overflow:auto}
-        .msg-chat > div[style*="flex:1"]{max-height:60vh;overflow:auto}
+        /* scroll areas */
+        .msg-sidebar > div:nth-child(2){max-height:calc(50vh - 120px);overflow-y:auto;overflow-x:hidden;}
+        .msg-chat > div:nth-child(3){flex:1;overflow-y:auto;overflow-x:hidden;}
+        @media(min-width:641px){
+          .msg-sidebar > div:nth-child(2){max-height:calc(650px - 120px);}
+          .msg-chat > div:nth-child(3){max-height:calc(650px - 220px);}
+        }
       `}</style>
     </div>
   );
