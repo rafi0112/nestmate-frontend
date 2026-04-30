@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { socket } from '@/utils/socket';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import {
@@ -648,6 +649,30 @@ function RoomChat({ hh, myEmail, myName }: { hh: Household; myEmail: string; myN
     } catch { if (!silent) toast.error('Could not load chat'); }
   }, [hh._id]);
 
+  // ✨ SOCKET: Join room and listen for messages
+  useEffect(() => {
+    if (!hh._id) return;
+
+    // Join the room
+    socket.emit('join_room', hh._id);
+
+    // Listen for incoming messages
+    socket.on('receive_message', (msg: ChatMsg) => {
+      setMessages(prev => {
+        const merged = mergeMessages(prev, [msg]);
+        if (merged.length > 0) {
+          latestRef.current = merged[merged.length - 1]?.timestamp;
+        }
+        return merged;
+      });
+    });
+
+    // Cleanup on unmount
+    return () => {
+      socket.off('receive_message');
+    };
+  }, [hh._id]);
+
   useEffect(() => {
     loadChat();
     pollRef.current = setInterval(()=>loadChat(true), 5000);
@@ -663,9 +688,24 @@ function RoomChat({ hh, myEmail, myName }: { hh: Household; myEmail: string; myN
   const send = async () => {
     if (!text.trim() || sending) return;
     setSending(true);
-    const t = text.trim(); setText('');
+    const t = text.trim(); 
+    setText('');
+    
     try {
-      await sendRoomChat({ householdId:hh._id, senderEmail:myEmail, senderName:myName, text:t, replyTo:replyTarget?._id });
+      const msg = {
+        householdId: hh._id,
+        senderEmail: myEmail,
+        senderName: myName,
+        text: t,
+        replyTo: replyTarget?._id,
+      };
+
+      // 🔥 Emit via socket
+      socket.emit('send_message', msg);
+
+      // Also send via API (IMPORTANT)
+      await sendRoomChat(msg);
+      
       setReplyTarget(null);
       await loadChat();
     } catch { toast.error('Message failed'); }

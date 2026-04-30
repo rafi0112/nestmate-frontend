@@ -1,0 +1,639 @@
+
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font-mono,'Courier New',monospace)}
+  .root{padding:1rem 0}
+  .tabs{display:flex;gap:6px;margin-bottom:1.5rem;flex-wrap:wrap}
+  .tab{padding:6px 14px;border-radius:6px;border:0.5px solid var(--color-border-secondary);font-size:12px;font-weight:500;cursor:pointer;background:var(--color-background-secondary);color:var(--color-text-secondary);font-family:var(--font-sans);transition:all .15s}
+  .tab.active{background:var(--color-text-primary);color:var(--color-background-primary);border-color:var(--color-text-primary)}
+  .collections{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+  .coll{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:10px;overflow:hidden;transition:box-shadow .15s}
+  .coll:hover{border-color:var(--color-border-primary)}
+  .coll-head{padding:12px 14px;border-bottom:0.5px solid var(--color-border-tertiary);cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .coll-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+  .coll-name{font-size:13px;font-weight:500;font-family:var(--font-sans);color:var(--color-text-primary);letter-spacing:.01em}
+  .coll-badge{font-size:10px;padding:2px 7px;border-radius:100px;font-family:var(--font-sans);font-weight:500}
+  .fields{padding:8px 0}
+  .field{display:grid;grid-template-columns:16px 1fr auto auto;align-items:center;gap:8px;padding:5px 14px;font-size:11.5px}
+  .field:hover{background:var(--color-background-secondary)}
+  .field-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+  .field-name{font-family:var(--font-mono);color:var(--color-text-primary);font-size:11.5px}
+  .field-name.pk{color:#0F6E56;font-weight:500}
+  .field-name.fk{color:#185FA5}
+  .field-type{font-size:10px;color:var(--color-text-tertiary);font-family:var(--font-sans);text-align:right}
+  .field-tag{font-size:9px;padding:1px 5px;border-radius:3px;font-family:var(--font-sans);font-weight:500;white-space:nowrap}
+  .tag-pk{background:#E1F5EE;color:#0F6E56}
+  .tag-fk{background:#E6F1FB;color:#185FA5}
+  .tag-idx{background:#FAEEDA;color:#854F0B}
+  .tag-req{background:#FCEBEB;color:#A32D2D}
+  .tag-uniq{background:#EEEDFE;color:#3C3489}
+  .coll-footer{padding:8px 14px 10px;border-top:0.5px solid var(--color-border-tertiary);display:flex;gap:6px;flex-wrap:wrap}
+  .idx-pill{font-size:10px;padding:2px 8px;border-radius:100px;background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);font-family:var(--font-mono);color:var(--color-text-secondary)}
+  .rel-panel{display:flex;flex-direction:column;gap:10px}
+  .rel-row{display:grid;grid-template-columns:140px 60px 140px 1fr;align-items:center;gap:10px;padding:10px 14px;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:8px;font-size:12px}
+  .rel-from,.rel-to{font-family:var(--font-mono);font-size:11.5px;font-weight:500;color:var(--color-text-primary)}
+  .rel-card{font-family:var(--font-sans);font-size:11px;color:var(--color-text-secondary);text-align:center;background:var(--color-background-secondary);border-radius:4px;padding:3px 8px;letter-spacing:.03em}
+  .rel-note{font-family:var(--font-sans);font-size:11px;color:var(--color-text-secondary)}
+  .overview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:1.5rem}
+  .stat-card{background:var(--color-background-secondary);border-radius:8px;padding:14px 16px}
+  .stat-num{font-size:22px;font-weight:500;font-family:var(--font-sans);color:var(--color-text-primary);margin-bottom:3px}
+  .stat-lbl{font-size:11px;color:var(--color-text-secondary);font-family:var(--font-sans);text-transform:uppercase;letter-spacing:.06em}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:1.2rem}
+  .leg-item{display:flex;align-items:center;gap:5px;font-size:11px;font-family:var(--font-sans);color:var(--color-text-secondary)}
+  .leg-dot{width:8px;height:8px;border-radius:50%}
+  .section-head{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-secondary);font-family:var(--font-sans);margin-bottom:10px}
+  .search-wrap{position:relative;margin-bottom:1rem}
+  .search-input{width:100%;padding:8px 12px 8px 32px;border:0.5px solid var(--color-border-secondary);border-radius:8px;font-size:13px;background:var(--color-background-primary);color:var(--color-text-primary);font-family:var(--font-sans)}
+  .search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:14px;height:14px;opacity:.4}
+  .empty{text-align:center;padding:3rem;color:var(--color-text-tertiary);font-size:13px;font-family:var(--font-sans)}
+  .migration-panel{display:flex;flex-direction:column;gap:12px}
+  .mig-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:8px;overflow:hidden}
+  .mig-head{padding:10px 14px;border-bottom:0.5px solid var(--color-border-tertiary);font-size:12px;font-weight:500;font-family:var(--font-sans);color:var(--color-text-primary);display:flex;justify-content:space-between;align-items:center}
+  .mig-code{padding:12px 14px;font-size:11px;font-family:var(--font-mono);color:var(--color-text-secondary);white-space:pre;overflow-x:auto;line-height:1.6}
+  .copy-btn{font-size:10px;padding:2px 8px;border-radius:4px;border:0.5px solid var(--color-border-secondary);background:transparent;cursor:pointer;color:var(--color-text-secondary);font-family:var(--font-sans)}
+  .copy-btn:hover{background:var(--color-background-secondary)}
+  .filter-row{display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap}
+  .filter-btn{font-size:11px;padding:3px 10px;border-radius:100px;border:0.5px solid var(--color-border-secondary);background:transparent;cursor:pointer;font-family:var(--font-sans);color:var(--color-text-secondary);transition:all .12s}
+  .filter-btn.on{background:var(--color-text-primary);color:var(--color-background-primary);border-color:var(--color-text-primary)}
+</style>
+
+<div class="root">
+<h2 class="sr-only">NestMate MongoDB schema explorer — 10 collections, relationships, and indexes</h2>
+
+<div class="tabs" id="tabs">
+  <button class="tab active" data-tab="collections">Collections</button>
+  <button class="tab" data-tab="relations">Relationships</button>
+  <button class="tab" data-tab="indexes">Indexes</button>
+  <button class="tab" data-tab="migration">Setup Scripts</button>
+</div>
+
+<!-- ── COLLECTIONS ──────────────────────────────────────────── -->
+<div id="tab-collections">
+  <div class="search-wrap">
+    <svg class="search-icon" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor"/><path d="M10 10l3 3" stroke="currentColor" stroke-linecap="round"/></svg>
+    <input class="search-input" id="search" placeholder="Search fields or collections…" oninput="filterColls(this.value)">
+  </div>
+  <div class="filter-row">
+    <button class="filter-btn on" data-f="all" onclick="setFilter('all',this)">All</button>
+    <button class="filter-btn" data-f="core" onclick="setFilter('core',this)">Core</button>
+    <button class="filter-btn" data-f="household" onclick="setFilter('household',this)">Household</button>
+    <button class="filter-btn" data-f="social" onclick="setFilter('social',this)">Social</button>
+  </div>
+  <div class="collections" id="coll-grid"></div>
+</div>
+
+<!-- ── RELATIONSHIPS ──────────────────────────────────────────── -->
+<div id="tab-relations" style="display:none">
+  <div class="section-head" style="margin-bottom:14px">Entity relationships — all references use ObjectId</div>
+  <div class="rel-panel" id="rel-panel"></div>
+</div>
+
+<!-- ── INDEXES ──────────────────────────────────────────────── -->
+<div id="tab-indexes" style="display:none">
+  <div class="overview-grid" id="idx-overview"></div>
+  <div class="section-head">All index definitions</div>
+  <div class="collections" id="idx-grid" style="grid-template-columns:repeat(auto-fill,minmax(340px,1fr))"></div>
+</div>
+
+<!-- ── MIGRATION ──────────────────────────────────────────────── -->
+<div id="tab-migration" style="display:none">
+  <div class="migration-panel" id="mig-panel"></div>
+</div>
+</div>
+
+<script>
+const COLORS = {
+  core:      {bg:'#E1F5EE',tx:'#0F6E56',dot:'#1D9E75'},
+  household: {bg:'#E6F1FB',tx:'#185FA5',dot:'#378ADD'},
+  social:    {bg:'#FAEEDA',tx:'#854F0B',dot:'#EF9F27'},
+  auth:      {bg:'#EEEDFE',tx:'#3C3489',dot:'#7F77DD'},
+};
+
+const COLLECTIONS = [
+  {
+    name:'users', group:'auth', icon:'👤', label:'Auth & Profiles',
+    desc:'User accounts, linked to Firebase UID',
+    fields:[
+      {n:'_id',        t:'ObjectId',  pk:true,  req:true},
+      {n:'firebaseUid',t:'String',    uniq:true, idx:true, req:true},
+      {n:'email',      t:'String',    uniq:true, idx:true, req:true},
+      {n:'displayName',t:'String',    req:true},
+      {n:'photoURL',   t:'String'},
+      {n:'phone',      t:'String'},
+      {n:'bio',        t:'String'},
+      {n:'preferredCity',t:'String',  idx:true},
+      {n:'lifestylePrefs',t:'Object'},
+      {n:'quizProfile',t:'Object'},
+      {n:'savedListings',t:'[ObjectId]', fk:'roommates'},
+      {n:'householdId',t:'ObjectId',  fk:'households', idx:true},
+      {n:'isVerified', t:'Boolean',   idx:true},
+      {n:'lastSeen',   t:'Date',      idx:true},
+      {n:'createdAt',  t:'Date'},
+      {n:'updatedAt',  t:'Date'},
+    ],
+    indexes:['{ email:1 } unique','{ firebaseUid:1 } unique','{ householdId:1 }','{ preferredCity:1, isVerified:1 }','{ lastSeen:-1 }'],
+  },
+  {
+    name:'roommates', group:'core', icon:'🏠', label:'Listings',
+    desc:'Room listings posted by users',
+    fields:[
+      {n:'_id',         t:'ObjectId', pk:true,  req:true},
+      {n:'userEmail',   t:'String',   idx:true,  req:true},
+      {n:'userId',      t:'ObjectId', fk:'users', idx:true},
+      {n:'title',       t:'String',   idx:true,  req:true},
+      {n:'description', t:'String',   req:true},
+      {n:'location',    t:'String',   idx:true,  req:true},
+      {n:'city',        t:'String',   idx:true},
+      {n:'coordinates', t:'GeoJSON',  idx:'2dsphere'},
+      {n:'rentAmount',  t:'Number',   idx:true,  req:true},
+      {n:'roomType',    t:'String',   idx:true},
+      {n:'availability',t:'String',   idx:true},
+      {n:'imageUrls',   t:'[String]'},
+      {n:'lifestylePreferences',t:'Object'},
+      {n:'amenities',   t:'[String]'},
+      {n:'contactInfo', t:'String',   req:true},
+      {n:'likes',       t:'[String]', idx:true},
+      {n:'viewCount',   t:'Number'},
+      {n:'isFeatured',  t:'Boolean',  idx:true},
+      {n:'status',      t:'String',   idx:true},
+      {n:'expiresAt',   t:'Date',     idx:true},
+      {n:'createdAt',   t:'Date',     idx:true},
+      {n:'updatedAt',   t:'Date'},
+    ],
+    indexes:['{ location:1, rentAmount:1 }','{ city:1, availability:1, roomType:1 }','{ userId:1 }','{ coordinates:"2dsphere" }','{ likes:1 }','{ status:1, expiresAt:1 }','{ createdAt:-1 }','{ title:"text", description:"text", location:"text" } text-search'],
+  },
+  {
+    name:'households', group:'household', icon:'🏘', label:'Household Groups',
+    desc:'Shared living group — joins members via join code',
+    fields:[
+      {n:'_id',         t:'ObjectId', pk:true,  req:true},
+      {n:'listingId',   t:'ObjectId', fk:'roommates', idx:true},
+      {n:'listingTitle',t:'String'},
+      {n:'ownerEmail',  t:'String',   idx:true,  req:true},
+      {n:'joinCode',    t:'String',   uniq:true, idx:true, req:true},
+      {n:'members',     t:'[String]', idx:true,  req:true},
+      {n:'memberIds',   t:'[ObjectId]',fk:'users'},
+      {n:'monthlyFee',  t:'Number',   req:true},
+      {n:'name',        t:'String'},
+      {n:'address',     t:'String'},
+      {n:'rules',       t:'String'},
+      {n:'settings',    t:'Object'},
+      {n:'isActive',    t:'Boolean',  idx:true},
+      {n:'createdAt',   t:'Date'},
+      {n:'updatedAt',   t:'Date'},
+    ],
+    indexes:['{ joinCode:1 } unique','{ members:1 }','{ ownerEmail:1 }','{ listingId:1 }','{ isActive:1 }'],
+  },
+  {
+    name:'messages', group:'social', icon:'💬', label:'Direct Messages',
+    desc:'1:1 messages between users about listings',
+    fields:[
+      {n:'_id',         t:'ObjectId', pk:true,  req:true},
+      {n:'fromEmail',   t:'String',   idx:true,  req:true},
+      {n:'toEmail',     t:'String',   idx:true,  req:true},
+      {n:'fromId',      t:'ObjectId', fk:'users'},
+      {n:'toId',        t:'ObjectId', fk:'users'},
+      {n:'listingId',   t:'String',   idx:true},
+      {n:'listingTitle',t:'String'},
+      {n:'text',        t:'String',   req:true},
+      {n:'mediaUrl',    t:'String'},
+      {n:'read',        t:'Boolean',  idx:true},
+      {n:'readAt',      t:'Date'},
+      {n:'deleted',     t:'Boolean'},
+      {n:'timestamp',   t:'Date',     idx:true,  req:true},
+    ],
+    indexes:['{ fromEmail:1, toEmail:1, timestamp:1 }','{ toEmail:1, read:1 }','{ listingId:1, timestamp:1 }','{ timestamp:-1 }','{ fromId:1, toId:1, listingId:1 }'],
+  },
+  {
+    name:'ledger', group:'household', icon:'🛒', label:'Market Ledger',
+    desc:'Grocery and market expenses per household',
+    fields:[
+      {n:'_id',         t:'ObjectId', pk:true,  req:true},
+      {n:'householdId', t:'ObjectId', fk:'households', idx:true, req:true},
+      {n:'item',        t:'String',   req:true},
+      {n:'amount',      t:'Number',   req:true},
+      {n:'currency',    t:'String'},
+      {n:'date',        t:'String',   idx:true,  req:true},
+      {n:'paidBy',      t:'String',   idx:true,  req:true},
+      {n:'paidById',    t:'ObjectId', fk:'users'},
+      {n:'category',    t:'String',   idx:true},
+      {n:'receipt',     t:'String'},
+      {n:'splitWith',   t:'[String]'},
+      {n:'createdAt',   t:'Date',     idx:true},
+    ],
+    indexes:['{ householdId:1, date:-1 }','{ householdId:1, paidBy:1 }','{ householdId:1, category:1 }'],
+  },
+  {
+    name:'meals', group:'household', icon:'🍽', label:'Daily Meal Log',
+    desc:'Per-user meal log per household day — upsert on date',
+    fields:[
+      {n:'_id',         t:'ObjectId', pk:true,  req:true},
+      {n:'householdId', t:'ObjectId', fk:'households', idx:true, req:true},
+      {n:'userEmail',   t:'String',   idx:true,  req:true},
+      {n:'userId',      t:'ObjectId', fk:'users'},
+      {n:'date',        t:'String',   idx:true,  req:true},
+      {n:'meals',       t:'Number',   req:true},
+      {n:'guests',      t:'Number'},
+      {n:'note',        t:'String'},
+      {n:'updatedAt',   t:'Date'},
+      {n:'createdAt',   t:'Date'},
+    ],
+    indexes:['{ householdId:1, date:1 }','{ householdId:1, userEmail:1, date:1 } unique','{ householdId:1, userEmail:1 }'],
+  },
+  {
+    name:'payments', group:'household', icon:'💳', label:'Due Payments',
+    desc:'Payment records for room fees and market dues',
+    fields:[
+      {n:'_id',         t:'ObjectId', pk:true,  req:true},
+      {n:'householdId', t:'ObjectId', fk:'households', idx:true, req:true},
+      {n:'fromEmail',   t:'String',   idx:true,  req:true},
+      {n:'fromId',      t:'ObjectId', fk:'users'},
+      {n:'toEmail',     t:'String',   idx:true},
+      {n:'amount',      t:'Number',   req:true},
+      {n:'currency',    t:'String'},
+      {n:'type',        t:'String',   idx:true},
+      {n:'month',       t:'String',   idx:true},
+      {n:'note',        t:'String'},
+      {n:'status',      t:'String',   idx:true},
+      {n:'reference',   t:'String'},
+      {n:'date',        t:'Date',     idx:true,  req:true},
+    ],
+    indexes:['{ householdId:1, month:1 }','{ householdId:1, fromEmail:1, month:1 }','{ householdId:1, status:1 }','{ date:-1 }'],
+  },
+  {
+    name:'room_chat', group:'household', icon:'📣', label:'Room Chat',
+    desc:'Group chat messages per household — TTL 90 days',
+    fields:[
+      {n:'_id',         t:'ObjectId', pk:true,  req:true},
+      {n:'householdId', t:'ObjectId', fk:'households', idx:true, req:true},
+      {n:'senderEmail', t:'String',   idx:true,  req:true},
+      {n:'senderId',    t:'ObjectId', fk:'users'},
+      {n:'senderName',  t:'String',   req:true},
+      {n:'text',        t:'String',   req:true},
+      {n:'mediaUrl',    t:'String'},
+      {n:'type',        t:'String'},
+      {n:'replyTo',     t:'ObjectId', fk:'room_chat'},
+      {n:'reactions',   t:'Object'},
+      {n:'edited',      t:'Boolean'},
+      {n:'deletedAt',   t:'Date'},
+      {n:'timestamp',   t:'Date',     idx:true,  req:true},
+    ],
+    indexes:['{ householdId:1, timestamp:1 }','{ householdId:1, senderEmail:1 }','{ timestamp:1 } TTL 90d'],
+  },
+  {
+    name:'reviews', group:'social', icon:'⭐', label:'Mess Reviews',
+    desc:'Public mess-mate reviews visible on home page',
+    fields:[
+      {n:'_id',         t:'ObjectId', pk:true,  req:true},
+      {n:'authorEmail', t:'String',   idx:true,  req:true},
+      {n:'authorId',    t:'ObjectId', fk:'users'},
+      {n:'authorName',  t:'String',   req:true},
+      {n:'houseName',   t:'String',   idx:true,  req:true},
+      {n:'householdId', t:'ObjectId', fk:'households', idx:true},
+      {n:'text',        t:'String',   req:true},
+      {n:'rating',      t:'Number',   idx:true,  req:true},
+      {n:'helpful',     t:'Number'},
+      {n:'verified',    t:'Boolean',  idx:true},
+      {n:'date',        t:'Date',     idx:true,  req:true},
+    ],
+    indexes:['{ householdId:1, rating:-1 }','{ authorEmail:1 }','{ rating:-1, date:-1 }','{ houseName:"text", text:"text" } text-search','{ verified:1, date:-1 }'],
+  },
+  {
+    name:'notifications', group:'social', icon:'🔔', label:'Notifications',
+    desc:'In-app notification feed — TTL 30 days after read',
+    fields:[
+      {n:'_id',         t:'ObjectId', pk:true,  req:true},
+      {n:'userId',      t:'ObjectId', fk:'users', idx:true, req:true},
+      {n:'userEmail',   t:'String',   idx:true,  req:true},
+      {n:'type',        t:'String',   idx:true,  req:true},
+      {n:'title',       t:'String',   req:true},
+      {n:'body',        t:'String'},
+      {n:'link',        t:'String'},
+      {n:'metadata',    t:'Object'},
+      {n:'read',        t:'Boolean',  idx:true},
+      {n:'readAt',      t:'Date'},
+      {n:'createdAt',   t:'Date',     idx:true,  req:true},
+    ],
+    indexes:['{ userId:1, read:1, createdAt:-1 }','{ userEmail:1, read:1 }','{ type:1, createdAt:-1 }','{ readAt:1 } TTL 30d'],
+  },
+];
+
+const RELATIONS = [
+  {from:'users',fk:'_id',to:'roommates',fkField:'userId',card:'1 → N',note:'User posts many listings'},
+  {from:'users',fk:'_id',to:'households',fkField:'memberIds[]',card:'N ↔ N',note:'Many users share one household'},
+  {from:'users',fk:'_id',to:'messages',fkField:'fromId/toId',card:'1 → N',note:'User sends and receives messages'},
+  {from:'users',fk:'_id',to:'meals',fkField:'userId',card:'1 → N',note:'User logs daily meals'},
+  {from:'users',fk:'_id',to:'payments',fkField:'fromId',card:'1 → N',note:'User makes due payments'},
+  {from:'users',fk:'_id',to:'room_chat',fkField:'senderId',card:'1 → N',note:'User sends chat messages'},
+  {from:'users',fk:'_id',to:'reviews',fkField:'authorId',card:'1 → N',note:'User writes reviews'},
+  {from:'users',fk:'_id',to:'notifications',fkField:'userId',card:'1 → N',note:'User receives notifications'},
+  {from:'roommates',fk:'_id',to:'households',fkField:'listingId',card:'1 → 1',note:'Listing may have one household'},
+  {from:'households',fk:'_id',to:'ledger',fkField:'householdId',card:'1 → N',note:'Household has many ledger entries'},
+  {from:'households',fk:'_id',to:'meals',fkField:'householdId',card:'1 → N',note:'Household tracks daily meals'},
+  {from:'households',fk:'_id',to:'payments',fkField:'householdId',card:'1 → N',note:'Household tracks payments'},
+  {from:'households',fk:'_id',to:'room_chat',fkField:'householdId',card:'1 → N',note:'Household has group chat'},
+  {from:'households',fk:'_id',to:'reviews',fkField:'householdId',card:'1 → N',note:'Household can receive reviews'},
+  {from:'room_chat',fk:'_id',to:'room_chat',fkField:'replyTo',card:'1 → 1',note:'Chat message can reply to another'},
+];
+
+const MIGRATION_SCRIPTS = [
+  {
+    title:'1. Create collections with validation',
+    code:`db.createCollection("users", {
+  validator: {
+    $jsonSchema: {
+      bsonType: "object",
+      required: ["firebaseUid","email","displayName","createdAt"],
+      properties: {
+        email:       { bsonType:"string", pattern:"^.+@.+$" },
+        firebaseUid: { bsonType:"string" },
+        isVerified:  { bsonType:"bool" }
+      }
+    }
+  }
+});
+
+db.createCollection("roommates", {
+  validator: {
+    $jsonSchema: {
+      required: ["title","location","rentAmount","userEmail","contactInfo"],
+      properties: {
+        rentAmount: { bsonType:"number", minimum:0 },
+        status:     { enum:["active","expired","draft"] }
+      }
+    }
+  }
+});
+
+db.createCollection("households", {
+  validator: {
+    $jsonSchema: {
+      required: ["ownerEmail","joinCode","members","monthlyFee"],
+      properties: {
+        joinCode:   { bsonType:"string", minLength:6, maxLength:6 },
+        monthlyFee: { bsonType:"number", minimum:0 }
+      }
+    }
+  }
+});`
+  },
+  {
+    title:'2. Create all indexes',
+    code:`// users
+db.users.createIndex({ email:1 }, { unique:true });
+db.users.createIndex({ firebaseUid:1 }, { unique:true });
+db.users.createIndex({ householdId:1 });
+db.users.createIndex({ preferredCity:1, isVerified:1 });
+
+// roommates
+db.roommates.createIndex({ city:1, availability:1, roomType:1 });
+db.roommates.createIndex({ location:1, rentAmount:1 });
+db.roommates.createIndex({ userId:1 });
+db.roommates.createIndex({ coordinates:"2dsphere" });
+db.roommates.createIndex({ status:1, expiresAt:1 });
+db.roommates.createIndex({ createdAt:-1 });
+db.roommates.createIndex(
+  { title:"text", description:"text", location:"text" },
+  { weights:{ title:3, location:2, description:1 } }
+);
+
+// households
+db.households.createIndex({ joinCode:1 }, { unique:true });
+db.households.createIndex({ members:1 });
+
+// messages
+db.messages.createIndex({ fromEmail:1, toEmail:1, timestamp:1 });
+db.messages.createIndex({ toEmail:1, read:1 });
+db.messages.createIndex({ listingId:1, timestamp:1 });
+
+// meals — compound unique prevents duplicate logs
+db.meals.createIndex(
+  { householdId:1, userEmail:1, date:1 },
+  { unique:true }
+);
+
+// room_chat TTL — auto-delete after 90 days
+db.room_chat.createIndex(
+  { timestamp:1 },
+  { expireAfterSeconds: 7776000 }  // 90 days
+);
+
+// notifications TTL — auto-delete read after 30 days
+db.notifications.createIndex(
+  { readAt:1 },
+  { expireAfterSeconds: 2592000,   // 30 days
+    partialFilterExpression:{ read:true } }
+);`
+  },
+  {
+    title:'3. Aggregation pipeline — fair-share calculation',
+    code:`// Calculate each member's fair share for a given household + month
+db.meals.aggregate([
+  { $match: {
+    householdId: ObjectId("HOUSEHOLD_ID"),
+    date: { $regex: "^2025-01" }     // filter by month
+  }},
+  { $group: {
+    _id: "$userEmail",
+    totalUnits: { $sum: { $add: ["$meals","$guests"] } }
+  }},
+  { $lookup: {
+    from:         "ledger",
+    let:          { hid: ObjectId("HOUSEHOLD_ID"), month: "2025-01" },
+    pipeline:     [
+      { $match: { $expr: { $and: [
+        { $eq: ["$householdId","$$hid"] },
+        { $regexMatch: { input:"$date", regex:"^$$month" } }
+      ]}}},
+      { $group: { _id:null, total:{ $sum:"$amount" } } }
+    ],
+    as: "marketTotal"
+  }},
+  { $addFields: {
+    marketTotal:  { $ifNull:[{ $first:"$marketTotal.total" },0] },
+    totalAllUnits: 1   // placeholder — replace with $totalUnits from prev stage
+  }},
+  { $project: {
+    member:        "$_id",
+    mealUnits:     "$totalUnits",
+    marketShare:   { $multiply:[
+      { $divide:["$totalUnits","$totalAllUnits"] },
+      "$marketTotal"
+    ]}
+  }}
+]);`
+  },
+  {
+    title:'4. Geospatial listing search',
+    code:`// Find listings within 5km of a location
+db.roommates.find({
+  coordinates: {
+    $near: {
+      $geometry: {
+        type: "Point",
+        coordinates: [90.4125, 23.8103]  // lng, lat (Dhaka)
+      },
+      $maxDistance: 5000  // 5km in metres
+    }
+  },
+  status: "active",
+  availability: "Available"
+}, {
+  title:1, location:1, rentAmount:1,
+  coordinates:1, roomType:1
+}).limit(20);
+
+// Add to MongoDB Atlas Search for full-text:
+db.roommates.find(
+  { $text: { $search: "mirpur dhaka 2BR" } },
+  { score: { $meta:"textScore" } }
+).sort({ score: { $meta:"textScore" } });`
+  },
+];
+
+let activeFilter = 'all';
+let activeTab = 'collections';
+
+function colColor(group) {
+  return COLORS[group] || COLORS.core;
+}
+
+function renderColls(query='') {
+  const grid = document.getElementById('coll-grid');
+  const q = query.toLowerCase();
+  const filtered = COLLECTIONS.filter(c => {
+    const matchGroup = activeFilter==='all' || c.group===activeFilter;
+    if (!q) return matchGroup;
+    return matchGroup && (c.name.includes(q) || c.fields.some(f=>f.n.includes(q)||f.t.toLowerCase().includes(q)));
+  });
+  if (!filtered.length) { grid.innerHTML='<div class="empty">No collections match your search.</div>'; return; }
+  grid.innerHTML = filtered.map(c => {
+    const col = colColor(c.group);
+    const matchFields = q ? c.fields.filter(f=>f.n.includes(q)||f.t.toLowerCase().includes(q)) : c.fields;
+    return `<div class="coll">
+      <div class="coll-head">
+        <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0">
+          <div class="coll-icon" style="background:${col.bg}">
+            <span style="font-size:14px">${c.icon}</span>
+          </div>
+          <div>
+            <div class="coll-name">${c.name}</div>
+            <div style="font-size:10px;color:var(--color-text-tertiary);font-family:var(--font-sans)">${c.desc}</div>
+          </div>
+        </div>
+        <span class="coll-badge" style="background:${col.bg};color:${col.tx}">${c.label}</span>
+      </div>
+      <div class="fields">
+        ${matchFields.map(f=>`<div class="field">
+          <div class="field-dot" style="background:${f.pk?col.dot:f.fk?'#378ADD':f.uniq?'#7F77DD':f.idx?'#EF9F27':'var(--color-border-secondary)'}"></div>
+          <span class="field-name${f.pk?' pk':f.fk?' fk':''}">${f.n}</span>
+          <span class="field-type">${f.t}</span>
+          <span style="display:flex;gap:3px;flex-wrap:wrap;justify-content:flex-end">
+            ${f.pk?'<span class="field-tag tag-pk">PK</span>':''}
+            ${f.fk?`<span class="field-tag tag-fk">→${f.fk}</span>`:''}
+            ${f.uniq?'<span class="field-tag tag-uniq">unique</span>':''}
+            ${f.idx&&!f.pk&&!f.uniq?'<span class="field-tag tag-idx">idx</span>':''}
+            ${f.req&&!f.pk?'<span class="field-tag tag-req">req</span>':''}
+          </span>
+        </div>`).join('')}
+      </div>
+      <div class="coll-footer">
+        ${c.indexes.map(i=>`<span class="idx-pill">${i}</span>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderRelations() {
+  document.getElementById('rel-panel').innerHTML = RELATIONS.map(r=>{
+    const fc = colColor(COLLECTIONS.find(c=>c.name===r.from)?.group||'core');
+    const tc = colColor(COLLECTIONS.find(c=>c.name===r.to)?.group||'core');
+    return `<div class="rel-row">
+      <span class="rel-from" style="color:${fc.dot}">${r.from}</span>
+      <span class="rel-card">${r.card}</span>
+      <span class="rel-to" style="color:${tc.dot}">${r.to}</span>
+      <span class="rel-note">${r.note} <span style="color:var(--color-text-tertiary);font-family:var(--font-mono);font-size:10px">(via ${r.fkField})</span></span>
+    </div>`;
+  }).join('');
+}
+
+function renderIndexes() {
+  const totalIdx = COLLECTIONS.reduce((s,c)=>s+c.indexes.length,0);
+  const totalFields = COLLECTIONS.reduce((s,c)=>s+c.fields.length,0);
+  document.getElementById('idx-overview').innerHTML = [
+    {n:COLLECTIONS.length,l:'Collections'},
+    {n:totalFields,l:'Total fields'},
+    {n:totalIdx,l:'Index definitions'},
+    {n:COLLECTIONS.filter(c=>c.indexes.some(i=>i.includes('TTL'))).length,l:'TTL indexes'},
+    {n:COLLECTIONS.filter(c=>c.indexes.some(i=>i.includes('text'))).length,l:'Text search'},
+    {n:COLLECTIONS.filter(c=>c.indexes.some(i=>i.includes('unique'))).length,l:'Unique constraints'},
+  ].map(s=>`<div class="stat-card"><div class="stat-num">${s.n}</div><div class="stat-lbl">${s.l}</div></div>`).join('');
+
+  document.getElementById('idx-grid').innerHTML = COLLECTIONS.map(c=>{
+    const col = colColor(c.group);
+    return `<div class="coll">
+      <div class="coll-head">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="coll-icon" style="background:${col.bg}"><span style="font-size:14px">${c.icon}</span></div>
+          <span class="coll-name">${c.name}</span>
+        </div>
+        <span style="font-size:10px;color:var(--color-text-tertiary);font-family:var(--font-sans)">${c.indexes.length} indexes</span>
+      </div>
+      <div style="padding:10px 14px;display:flex;flex-direction:column;gap:6px">
+        ${c.indexes.map(ix=>{
+          const isUniq=ix.includes('unique'),isTTL=ix.includes('TTL'),isText=ix.includes('text-search'),is2d=ix.includes('2dsphere');
+          const badge=isUniq?'tag-uniq':isTTL?'tag-req':isText?'tag-idx':is2d?'tag-fk':'';
+          const label=isUniq?'unique':isTTL?'TTL':isText?'text':is2d?'geo':'';
+          return `<div style="display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:0.5px solid var(--color-border-tertiary)">
+            <div class="field-dot" style="background:${isUniq?'#7F77DD':isTTL?'#A32D2D':isText||is2d?'#EF9F27':col.dot};margin-top:5px;flex-shrink:0"></div>
+            <span style="font-family:var(--font-mono);font-size:11px;color:var(--color-text-secondary);flex:1;word-break:break-all">${ix.replace(/ unique| TTL.*| text-search| 2dsphere/g,'').trim()}</span>
+            ${label?`<span class="field-tag ${badge}">${label}</span>`:''}
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderMigration() {
+  document.getElementById('mig-panel').innerHTML = MIGRATION_SCRIPTS.map((s,i)=>`
+    <div class="mig-card">
+      <div class="mig-head">
+        <span>${s.title}</span>
+        <button class="copy-btn" onclick="copyScript(${i},this)">Copy</button>
+      </div>
+      <div class="mig-code">${s.code.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+    </div>
+  `).join('');
+}
+
+function copyScript(i, btn) {
+  navigator.clipboard.writeText(MIGRATION_SCRIPTS[i].code).then(()=>{
+    btn.textContent='Copied!';
+    setTimeout(()=>btn.textContent='Copy',1800);
+  });
+}
+
+function filterColls(q) { renderColls(q); }
+function setFilter(f, el) {
+  activeFilter=f;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  renderColls(document.getElementById('search').value);
+}
+
+document.getElementById('tabs').addEventListener('click', e=>{
+  const btn=e.target.closest('.tab'); if(!btn)return;
+  const tab=btn.dataset.tab;
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  ['collections','relations','indexes','migration'].forEach(t=>{
+    document.getElementById('tab-'+t).style.display=t===tab?'':'none';
+  });
+  if(tab==='relations') renderRelations();
+  if(tab==='indexes')   renderIndexes();
+  if(tab==='migration') renderMigration();
+});
+
+renderColls();
+</script>
