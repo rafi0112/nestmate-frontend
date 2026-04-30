@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Send, Search, ArrowLeft, Clock, CheckCheck, MessageSquare, RefreshCw, Wifi, WifiOff, Plus } from 'lucide-react';
 import { getConversations, sendMessage as sendMessageApi, getHousehold, joinHousehold } from '@/lib/api';
+import { socket } from '@/utils/socket';
 import toast from 'react-hot-toast';
 
 interface DBMessage {
@@ -16,6 +17,23 @@ interface Conversation {
   id: string; otherEmail: string; otherName: string;
   listingId: string; listingTitle: string; messages: DBMessage[];
   lastMessage: string; lastTime: Date; unread: number;
+}
+
+function getConversationKey(message: Pick<DBMessage, 'listingId' | 'fromEmail' | 'toEmail'>, myEmail: string) {
+  const otherEmail = message.fromEmail === myEmail ? message.toEmail : message.fromEmail;
+  return `${message.listingId}::${otherEmail}`;
+}
+
+function getMessageKey(message: DBMessage) {
+  return message._id || `${message.listingId}::${message.fromEmail}::${message.toEmail}::${message.timestamp}::${message.text}`;
+}
+
+function mergeConversationMessages(prev: DBMessage[], next: DBMessage[]) {
+  const byKey = new Map<string, DBMessage>();
+  [...prev, ...next].forEach(message => {
+    byKey.set(getMessageKey(message), message);
+  });
+  return [...byKey.values()].sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
 }
 
 function timeAgo(d: Date | string): string {
@@ -91,6 +109,11 @@ function MessagesPageContent() {
   const [householdForDraft, setHouseholdForDraft] = useState<any|null>(null);
   const [joinCodeInput, setJoinCodeInput] = useState('');
   const [joining, setJoining] = useState(false);
+  const selectedRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    selectedRef.current = selected;
+  }, [selected]);
 
   const fetchConversations = useCallback(async (silent=false) => {
     if (!currentUser?.email) return;
@@ -129,6 +152,56 @@ function MessagesPageContent() {
     return () => { if (pollRef.current) clearInterval(pollRef.current); };
   }, [fetchConversations]);
 
+  useEffect(() => {
+    const myEmail = currentUser?.email;
+    if (!myEmail) return;
+
+    const handleIncomingMessage = (message: DBMessage) => {
+      if (!message?.listingId) return;
+
+      setConversations(prev => {
+        const conversationKey = getConversationKey(message, myEmail);
+        const otherEmail = message.fromEmail === myEmail ? message.toEmail : message.fromEmail;
+        const otherName = otherEmail.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        const existing = prev.find(conv => conv.id === conversationKey);
+        const nextUnread = message.toEmail === myEmail && message.fromEmail !== myEmail && selectedRef.current !== conversationKey
+          ? (existing?.unread || 0) + 1
+          : existing?.unread || 0;
+
+        if (!existing) {
+          return [{
+            id: conversationKey,
+            otherEmail,
+            otherName,
+            listingId: message.listingId,
+            listingTitle: message.listingTitle || 'Listing',
+            messages: [message],
+            lastMessage: message.text,
+            lastTime: new Date(message.timestamp),
+            unread: nextUnread,
+          }, ...prev].sort((a, b) => b.lastTime.getTime() - a.lastTime.getTime());
+        }
+
+        return prev
+          .map(conv => conv.id !== conversationKey ? conv : {
+            ...conv,
+            messages: mergeConversationMessages(conv.messages, [message]),
+            lastMessage: message.text,
+            lastTime: new Date(message.timestamp),
+            unread: nextUnread,
+          })
+          .sort((a, b) => b.lastTime.getTime() - a.lastTime.getTime());
+      });
+    };
+
+    socket.emit('join_room', myEmail);
+    socket.on('receive_message', handleIncomingMessage);
+
+    return () => {
+      socket.off('receive_message', handleIncomingMessage);
+    };
+  }, [currentUser?.email]);
+
   // If user arrived from a listing, try to fetch the household info for a quick join
   useEffect(() => {
     if (!hasDraftTarget) return;
@@ -158,9 +231,16 @@ function MessagesPageContent() {
       listingId: conv.listingId, listingTitle: conv.listingTitle, text,
       timestamp: new Date().toISOString(), read: false,
     };
-    setConversations(prev => prev.map(c => c.id !== selected ? c : { ...c, messages:[...c.messages, optimistic], lastMessage:text, lastTime:new Date() }));
     try {
-      await sendMessageApi({ fromEmail:currentUser.email, toEmail:conv.otherEmail, listingId:conv.listingId, listingTitle:conv.listingTitle, text, fromName:currentUser.displayName || currentUser.email.split('@')[0] });
+      const saved = await sendMessageApi({ fromEmail:currentUser.email, toEmail:conv.otherEmail, listingId:conv.listingId, listingTitle:conv.listingTitle, text, fromName:currentUser.displayName || currentUser.email.split('@')[0] });
+      if (saved) {
+        setConversations(prev => prev.map(c => c.id !== selected ? c : {
+          ...c,
+          messages: mergeConversationMessages(c.messages, [saved]),
+          lastMessage: saved.text,
+          lastTime: new Date(saved.timestamp),
+        }));
+      }
       setTimeout(() => fetchConversations(true), 600);
     } catch { toast.error('Failed to send message'); }
     finally { setSending(false); inputRef.current?.focus(); }

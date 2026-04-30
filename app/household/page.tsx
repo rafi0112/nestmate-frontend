@@ -628,10 +628,17 @@ function RoomChat({ hh, myEmail, myName }: { hh: Household; myEmail: string; myN
   const pollRef = useRef<ReturnType<typeof setInterval>|null>(null);
   const latestRef = useRef<string|undefined>(undefined);
 
+  const getMessageKey = (msg: ChatMsg) => {
+    const replyKey = typeof msg.replyTo === 'string'
+      ? msg.replyTo
+      : msg.replyTo?.messageId || '';
+    return msg._id || [msg.householdId, msg.senderEmail, msg.text, replyKey, msg.timestamp].join('|');
+  };
+
   const mergeMessages = (prev: ChatMsg[], next: ChatMsg[]) => {
     const byId = new Map<string, ChatMsg>();
     [...prev, ...next].forEach(msg => {
-      byId.set(msg._id, msg);
+      byId.set(getMessageKey(msg), msg);
     });
     return Array.from(byId.values()).sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
   };
@@ -657,7 +664,7 @@ function RoomChat({ hh, myEmail, myName }: { hh: Household; myEmail: string; myN
     socket.emit('join_room', hh._id);
 
     // Listen for incoming messages
-    socket.on('receive_message', (msg: ChatMsg) => {
+    const handleReceiveMessage = (msg: ChatMsg) => {
       setMessages(prev => {
         const merged = mergeMessages(prev, [msg]);
         if (merged.length > 0) {
@@ -665,11 +672,13 @@ function RoomChat({ hh, myEmail, myName }: { hh: Household; myEmail: string; myN
         }
         return merged;
       });
-    });
+    };
+
+    socket.on('receive_message', handleReceiveMessage);
 
     // Cleanup on unmount
     return () => {
-      socket.off('receive_message');
+      socket.off('receive_message', handleReceiveMessage);
     };
   }, [hh._id]);
 
@@ -700,11 +709,16 @@ function RoomChat({ hh, myEmail, myName }: { hh: Household; myEmail: string; myN
         replyTo: replyTarget?._id,
       };
 
-      // 🔥 Emit via socket
-      socket.emit('send_message', msg);
-
-      // Also send via API (IMPORTANT)
-      await sendRoomChat(msg);
+      const saved = await sendRoomChat(msg);
+      if (saved) {
+        setMessages(prev => {
+          const merged = mergeMessages(prev, [saved]);
+          if (merged.length > 0) {
+            latestRef.current = merged[merged.length - 1]?.timestamp;
+          }
+          return merged;
+        });
+      }
       
       setReplyTarget(null);
       await loadChat();
