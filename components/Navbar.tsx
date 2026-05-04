@@ -1,21 +1,24 @@
-'use client';
+﻿'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
-import { Home, Search, Plus, BookMarked, LogOut, Moon, Sun, Menu, X, Users, Target, MessageSquare, FileText, User } from 'lucide-react';
+import { BookMarked, FileText, Home, House, LogOut, Menu, MessageSquare, Moon, PlusSquare, Search, Sun, Target, User, Users, X } from 'lucide-react';
 
 const NAV = [
   { href: '/',             label: 'Home',        icon: Home },
   { href: '/browse',       label: 'Browse',      icon: Search },
   { href: '/compatibility',label: 'Match Quiz',  icon: Target },
-  { href: '/messages',     label: 'Messages',    icon: MessageSquare, auth: true },
-  { href: '/add-listing',  label: 'Post Room',   icon: Plus,          auth: true },
-  { href: '/my-listings',  label: 'My Listings', icon: BookMarked,    auth: true },
-  { href: '/household',    label: 'Household',   icon: Home, auth: true },
-  { href: '/profile',      label: 'Profile',     icon: User, auth: true },
   { href: '/agreement',    label: 'Agreement',   icon: FileText },
+];
+
+const WORKSPACE_NAV = [
+  { href: '/household', label: 'Household', icon: House },
+  { href: '/messages', label: 'Messages', icon: MessageSquare },
+  { href: '/add-listing', label: 'Post Room', icon: PlusSquare },
+  { href: '/my-listings', label: 'My Listings', icon: BookMarked },
+  { href: '/profile', label: 'Profile', icon: User },
 ];
 
 export default function Navbar() {
@@ -23,12 +26,20 @@ export default function Navbar() {
   const { theme, toggleTheme } = useTheme();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 6);
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const initials = (currentUser?.displayName || currentUser?.email || 'U')
     .split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 
   return (
-    <nav style={{ background: 'var(--bg-card)', borderBottom: '1px solid var(--border)', position: 'sticky', top: 0, zIndex: 200 }}>
+    <nav className={scrolled ? 'nav-scrolled' : ''} style={{ background: scrolled ? 'color-mix(in srgb, var(--bg-card) 82%, transparent)' : 'var(--bg-card)', borderBottom: '1px solid var(--border)', boxShadow: scrolled ? 'var(--shadow-md)' : 'none', position: 'fixed', top: 0, left: 0, right: 0, zIndex: 200, backdropFilter: scrolled ? 'blur(18px)' : 'none', WebkitBackdropFilter: scrolled ? 'blur(18px)' : 'none', transition: 'background .18s ease, box-shadow .18s ease, backdrop-filter .18s ease' }}>
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', display: 'flex', alignItems: 'center', height: 62, gap: 0 }}>
 
         {/* Logo */}
@@ -36,22 +47,21 @@ export default function Navbar() {
           <div style={{ width: 34, height: 34, background: 'var(--accent)', borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Users size={18} color="#fff" />
           </div>
-          <span style={{ fontFamily: 'Syne, serif', fontWeight: 800, fontSize: 18, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
+          <span style={{ fontFamily: 'Times New Roman', fontWeight: 800, fontSize: 18, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
             Nest<span style={{ color: 'var(--accent)' }}>Mate</span>
           </span>
         </Link>
 
         {/* Desktop nav links */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }} className="nav-desktop">
-          {NAV.map(({ href, label, icon: Icon, auth }) => {
-            if (auth && !currentUser) return null;
+          {NAV.map(({ href, label, icon: Icon }) => {
             const active = pathname === href;
             return (
               <Link key={href} href={href}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 5,
                   padding: '6px 10px', borderRadius: 7,
-                  fontSize: 13, fontFamily: 'Times New Roman, serif', fontWeight: active ? 700 : 500,
+                  fontSize: 13, fontFamily: 'Times New Roman', fontWeight: active ? 700 : 500,
                   color: active ? 'var(--accent)' : 'var(--text-secondary)',
                   background: active ? 'var(--accent-light)' : 'transparent',
                   transition: 'all 0.12s', whiteSpace: 'nowrap',
@@ -80,10 +90,10 @@ export default function Navbar() {
             <>
               {/* Avatar + name chip */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '4px 10px 4px 5px', background: 'var(--bg-subtle)', borderRadius: 100, border: '1px solid var(--border)' }}>
-                <div style={{ width: 26, height: 26, borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#fff', fontFamily: 'Syne, serif', flexShrink: 0 }}>
+                <div style={{ width: 26, height: 26, borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#fff', fontFamily: 'Times New Roman', flexShrink: 0 }}>
                   {initials}
                 </div>
-                <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', maxWidth: 80, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: 'Times New Roman, serif' }}>
+                <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', maxWidth: 80, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: 'Times New Roman' }}>
                   {currentUser.displayName || currentUser.email?.split('@')[0]}
                 </span>
               </div>
@@ -96,10 +106,10 @@ export default function Navbar() {
             </>
           ) : (
             <div style={{ display: 'flex', gap: 7 }} className="nav-desktop">
-              <Link href="/login" style={{ padding: '6px 14px', borderRadius: 7, border: '1.5px solid var(--border)', fontSize: 13, fontWeight: 600, fontFamily: 'Syne, serif', color: 'var(--text-primary)', background: 'transparent', transition: 'all 0.12s' }}>
+              <Link href="/login" style={{ padding: '6px 14px', borderRadius: 7, border: '1.5px solid var(--border)', fontSize: 13, fontWeight: 600, fontFamily: 'Times New Roman', color: 'var(--text-primary)', background: 'transparent', transition: 'all 0.12s' }}>
                 Log In
               </Link>
-              <Link href="/register" style={{ padding: '6px 14px', borderRadius: 7, background: 'var(--accent)', fontSize: 13, fontWeight: 700, fontFamily: 'Syne, serif', color: '#fff', transition: 'all 0.12s' }}>
+              <Link href="/register" style={{ padding: '6px 14px', borderRadius: 7, background: 'var(--accent)', fontSize: 13, fontWeight: 700, fontFamily: 'Times New Roman', color: '#fff', transition: 'all 0.12s' }}>
                 Sign Up
               </Link>
             </div>
@@ -122,24 +132,60 @@ export default function Navbar() {
       {/* Mobile menu drawer */}
       {open && (
         <div className="nav-mobile-drawer" style={{ background: 'rgba(255,255,255,0.82)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderTop: '1px solid var(--border)', padding: '12px 20px 20px' }}>
-          {NAV.map(({ href, label, icon: Icon, auth }) => {
-            if (auth && !currentUser) return null;
+          {NAV.map(({ href, label, icon: Icon }) => {
             const active = pathname === href;
             return (
               <Link key={href} href={href} onClick={() => setOpen(false)}
-                style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '13px 0', borderBottom: '1px solid var(--border)', fontSize: 15, color: active ? 'var(--accent)' : 'var(--text-primary)', fontWeight: active ? 700 : 500, fontFamily: 'Times New Roman, serif' }}>
+                style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '13px 0', borderBottom: '1px solid var(--border)', fontSize: 15, color: active ? 'var(--accent)' : 'var(--text-primary)', fontWeight: active ? 700 : 500, fontFamily: 'Times New Roman' }}>
                 <Icon size={15} style={{ color: active ? 'var(--accent)' : 'var(--text-muted)' }} />
                 {label}
               </Link>
             );
           })}
+
+          <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid var(--border)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 8 }}>
+              <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'Times New Roman' }}>Workspace</span>
+              {!currentUser && (
+                <span style={{ fontSize: 11, fontWeight: 700, borderRadius: 999, padding: '4px 8px', background: 'var(--bg-subtle)', color: 'var(--text-secondary)', border: '1px solid var(--border)' }}>
+                  Login required
+                </span>
+              )}
+            </div>
+            {WORKSPACE_NAV.map(({ href, label, icon: Icon }) => {
+              const active = pathname === href;
+              const locked = !currentUser;
+              const rowStyle: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 10, padding: '13px 0', borderBottom: '1px solid var(--border)', fontSize: 15, color: active ? 'var(--accent)' : 'var(--text-primary)', fontWeight: active ? 700 : 500, fontFamily: 'Times New Roman' };
+              const content = (
+                <>
+                  <Icon size={15} style={{ color: active ? 'var(--accent)' : 'var(--text-muted)' }} />
+                  <span style={{ filter: locked ? 'blur(4px)' : 'none', opacity: locked ? 0.55 : 1, transition: 'filter .12s ease, opacity .12s ease' }}>{label}</span>
+                </>
+              );
+
+              if (locked) {
+                return (
+                  <div key={href} style={{ ...rowStyle, opacity: 0.72 }} aria-disabled>
+                    {content}
+                  </div>
+                );
+              }
+
+              return (
+                <Link key={href} href={href} onClick={() => setOpen(false)} style={rowStyle}>
+                  {content}
+                </Link>
+              );
+            })}
+          </div>
+
           {!currentUser ? (
             <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
-              <Link href="/login" onClick={() => setOpen(false)} style={{ flex: 1, textAlign: 'center', padding: '11px', border: '1.5px solid var(--border)', borderRadius: 9, fontWeight: 700, fontFamily: 'Syne, serif', fontSize: 14 }}>Log In</Link>
-              <Link href="/register" onClick={() => setOpen(false)} style={{ flex: 1, textAlign: 'center', padding: '11px', background: 'var(--accent)', borderRadius: 9, fontWeight: 700, fontFamily: 'Syne, serif', fontSize: 14, color: '#fff' }}>Sign Up</Link>
+              <Link href="/login" onClick={() => setOpen(false)} style={{ flex: 1, textAlign: 'center', padding: '11px', border: '1.5px solid var(--border)', borderRadius: 9, fontWeight: 700, fontFamily: 'Times New Roman', fontSize: 14 }}>Log In</Link>
+              <Link href="/register" onClick={() => setOpen(false)} style={{ flex: 1, textAlign: 'center', padding: '11px', background: 'var(--accent)', borderRadius: 9, fontWeight: 700, fontFamily: 'Times New Roman', fontSize: 14, color: '#fff' }}>Sign Up</Link>
             </div>
           ) : (
-            <button onClick={() => { logout(); setOpen(false); }} style={{ width: '100%', marginTop: 14, padding: '11px', border: '1px solid var(--border)', borderRadius: 9, background: 'var(--bg-subtle)', fontSize: 14, color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'Times New Roman, serif', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+            <button onClick={() => { logout(); setOpen(false); }} style={{ width: '100%', marginTop: 14, padding: '11px', border: '1px solid var(--border)', borderRadius: 9, background: 'var(--bg-subtle)', fontSize: 14, color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'Times New Roman', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
               <LogOut size={14} /> Log Out
             </button>
           )}
@@ -148,9 +194,17 @@ export default function Navbar() {
 
       <style>{`
         @media (max-width: 900px) {
+          nav.nav-scrolled {
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+          }
           .nav-desktop { display: none !important; }
           .nav-mobile-btn { display: flex !important; }
           .nav-right-controls { margin-left: auto !important; }
+          .nav-mobile-drawer a,
+          .nav-mobile-drawer div {
+            -webkit-tap-highlight-color: transparent;
+          }
           .nav-mobile-drawer {
             position: fixed;
             left: 0;

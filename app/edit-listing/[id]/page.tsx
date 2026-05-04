@@ -81,7 +81,7 @@ export default function EditListingPage() {
   if (!currentUser) return (
     <div style={{ maxWidth: 480, margin: '80px auto', textAlign: 'center', padding: 24 }}>
       <h2 style={{ fontSize: 24, fontWeight: 800, marginBottom: 12 }}>Login required</h2>
-      <Link href="/login" style={{ padding: '12px 28px', borderRadius: 10, background: 'var(--accent)', color: '#fff', fontWeight: 700, fontFamily: 'Syne' }}>Log In</Link>
+      <Link href="/login" style={{ padding: '12px 28px', borderRadius: 10, background: 'var(--accent)', color: '#fff', fontWeight: 700, fontFamily: 'Times New Roman' }}>Log In</Link>
     </div>
   );
 
@@ -91,8 +91,8 @@ export default function EditListingPage() {
     </div>
   );
 
-  const inputStyle = { width: '100%', padding: '12px 14px', borderRadius: 10, border: '1.5px solid var(--border)', background: 'var(--bg-card)', fontSize: 14, color: 'var(--text-primary)', fontFamily: 'DM Sans', outline: 'none', transition: 'border-color 0.15s' };
-  const labelStyle = { display: 'block', fontSize: 12, fontWeight: 700, fontFamily: 'Syne', textTransform: 'uppercase' as const, letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 8 };
+  const inputStyle = { width: '100%', padding: '12px 14px', borderRadius: 10, border: '1.5px solid var(--border)', background: 'var(--bg-card)', fontSize: 14, color: 'var(--text-primary)', fontFamily: 'Times New Roman', outline: 'none', transition: 'border-color 0.15s' };
+  const labelStyle = { display: 'block', fontSize: 12, fontWeight: 700, fontFamily: 'Times New Roman', textTransform: 'uppercase' as const, letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 8 };
 
   return (
     <div style={{ maxWidth: 800, margin: '0 auto', padding: '40px 24px' }}>
@@ -176,8 +176,8 @@ export default function EditListingPage() {
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
-          <Link href="/my-listings" style={{ padding: '12px 24px', borderRadius: 10, border: '1.5px solid var(--border)', fontSize: 14, fontWeight: 700, fontFamily: 'Syne', color: 'var(--text-primary)', background: 'var(--bg-card)' }}>Cancel</Link>
-          <button type="submit" disabled={saving} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 28px', borderRadius: 10, background: saving ? 'var(--border)' : 'var(--accent)', color: saving ? 'var(--text-muted)' : '#fff', fontSize: 15, fontWeight: 700, fontFamily: 'Syne', border: 'none', cursor: saving ? 'not-allowed' : 'pointer' }}>
+          <Link href="/my-listings" style={{ padding: '12px 24px', borderRadius: 10, border: '1.5px solid var(--border)', fontSize: 14, fontWeight: 700, fontFamily: 'Times New Roman', color: 'var(--text-primary)', background: 'var(--bg-card)' }}>Cancel</Link>
+          <button type="submit" disabled={saving} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 28px', borderRadius: 10, background: saving ? 'var(--border)' : 'var(--accent)', color: saving ? 'var(--text-muted)' : '#fff', fontSize: 15, fontWeight: 700, fontFamily: 'Times New Roman', border: 'none', cursor: saving ? 'not-allowed' : 'pointer' }}>
             <Save size={15} /> {saving ? 'Saving...' : 'Save Changes'}
           </button>
         </div>

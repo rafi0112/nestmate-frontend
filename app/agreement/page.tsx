@@ -235,15 +235,15 @@ export default function AgreementPage() {
     toast.success('Agreement downloaded!');
   };
 
-  const inputStyle = { width: '100%', padding: '10px 14px', borderRadius: 8, border: '1.5px solid var(--border)', background: 'var(--bg-card)', fontSize: 14, color: 'var(--text-primary)', fontFamily: 'DM Sans', outline: 'none' };
-  const labelStyle = { display: 'block', fontSize: 12, fontWeight: 700, fontFamily: 'Syne', textTransform: 'uppercase' as const, letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 6 };
+  const inputStyle = { width: '100%', padding: '10px 14px', borderRadius: 8, border: '1.5px solid var(--border)', background: 'var(--bg-card)', fontSize: 14, color: 'var(--text-primary)', fontFamily: 'Times New Roman', outline: 'none' };
+  const labelStyle = { display: 'block', fontSize: 12, fontWeight: 700, fontFamily: 'Times New Roman', textTransform: 'uppercase' as const, letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 6 };
   const taStyle = { ...inputStyle, resize: 'vertical' as const, minHeight: 80 };
 
   return (
     <div className="agreement-page" style={{ maxWidth: 1100, margin: '0 auto', padding: '40px 24px' }}>
       {/* Header */}
       <div className="agreement-header" style={{ marginBottom: 40 }}>
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 12px', background: 'var(--success-light)', color: 'var(--success)', borderRadius: 100, fontSize: 12, fontWeight: 700, fontFamily: 'Syne', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 16 }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 12px', background: 'var(--success-light)', color: 'var(--success)', borderRadius: 100, fontSize: 12, fontWeight: 700, fontFamily: 'Times New Roman', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 16 }}>
           <FileText size={12} /> Free tool
         </div>
         <h1 className="agreement-title" style={{ fontSize: 36, fontWeight: 800, marginBottom: 8 }}>Roommate Agreement Generator</h1>
@@ -262,7 +262,7 @@ export default function AgreementPage() {
         ].map(({ icon, title, desc }) => (
           <div key={title} style={{ padding: '16px 20px', borderRadius: 12, background: 'var(--bg-card)', border: '1px solid var(--border)', display: 'flex', gap: 12, alignItems: 'flex-start' }}>
             <span style={{ fontSize: 24 }}>{icon}</span>
-            <div><p style={{ fontWeight: 700, fontSize: 14, fontFamily: 'Syne', marginBottom: 2 }}>{title}</p><p style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{desc}</p></div>
+            <div><p style={{ fontWeight: 700, fontSize: 14, fontFamily: 'Times New Roman', marginBottom: 2 }}>{title}</p><p style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{desc}</p></div>
           </div>
         ))}
       </div>
@@ -274,7 +274,7 @@ export default function AgreementPage() {
               <AlertCircle size={18} color="#fff" />
             </div>
             <div>
-              <p style={{ fontFamily:'Syne,serif', fontWeight:700, color: pendingMembers.length > 0 ? 'var(--danger)' : 'var(--success)', marginBottom:4 }}>
+              <p style={{ fontFamily:'Times New Roman', fontWeight:700, color: pendingMembers.length > 0 ? 'var(--danger)' : 'var(--success)', marginBottom:4 }}>
                 {loadingHousehold ? 'Checking agreement status…' : household ? 'Agreement signature status' : 'No household linked yet'}
               </p>
               <p style={{ fontSize:14, color:'var(--text-secondary)', lineHeight:1.6 }}>
@@ -288,12 +288,12 @@ export default function AgreementPage() {
           </div>
           <div style={{ display:'flex', gap:10, flexWrap:'wrap' }}>
             <button onClick={markSigned} disabled={!household || signing || isSigned}
-              style={{ display:'inline-flex', alignItems:'center', gap:8, padding:'11px 16px', borderRadius:10, border:'none', background:!household || isSigned ? 'var(--border)' : 'var(--accent)', color:!household || isSigned ? 'var(--text-muted)' : '#fff', cursor:!household || signing || isSigned ? 'not-allowed' : 'pointer', fontFamily:'Syne,serif', fontWeight:700 }}>
+              style={{ display:'inline-flex', alignItems:'center', gap:8, padding:'11px 16px', borderRadius:10, border:'none', background:!household || isSigned ? 'var(--border)' : 'var(--accent)', color:!household || isSigned ? 'var(--text-muted)' : '#fff', cursor:!household || signing || isSigned ? 'not-allowed' : 'pointer', fontFamily:'Times New Roman', fontWeight:700 }}>
               {signing ? <Loader2 size={14} style={{ animation:'spin 1s linear infinite' }} /> : <Check size={14} />}
               {isSigned ? 'You already signed' : 'Mark as signed'}
             </button>
             {household && (
-              <Link href="/household" style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', padding:'11px 16px', borderRadius:10, border:'1.5px solid var(--border)', background:'var(--bg-card)', color:'var(--text-primary)', fontFamily:'Syne,serif', fontWeight:700 }}>
+              <Link href="/household" style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', padding:'11px 16px', borderRadius:10, border:'1.5px solid var(--border)', background:'var(--bg-card)', color:'var(--text-primary)', fontFamily:'Times New Roman', fontWeight:700 }}>
                 Open Household
               </Link>
             )}
@@ -305,7 +305,7 @@ export default function AgreementPage() {
         <div style={{ marginBottom: 40, padding: 18, borderRadius: 14, border: '1px solid var(--border)', background:'var(--bg-card)' }}>
           <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:12, flexWrap:'wrap' }}>
             <Users size={16} style={{ color:'var(--accent)' }} />
-            <p style={{ fontFamily:'Syne,serif', fontWeight:700, color:'var(--accent)' }}>Roommate Signatures</p>
+            <p style={{ fontFamily:'Times New Roman', fontWeight:700, color:'var(--accent)' }}>Roommate Signatures</p>
           </div>
           <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(210px, 1fr))', gap:10 }}>
             {householdMembers.map(member => {
@@ -317,7 +317,7 @@ export default function AgreementPage() {
                     <p style={{ fontWeight:700, fontSize:14, color:'var(--text-primary)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{member}</p>
                     <p style={{ fontSize:11, color:'var(--text-muted)' }}>{signedNotification?.createdAt ? `Signed ${new Date(signedNotification.createdAt).toLocaleDateString('en-GB')}` : 'Pending signature'}</p>
                   </div>
-                  <span style={{ padding:'4px 9px', borderRadius:999, fontSize:10, fontFamily:'Syne,serif', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.07em', background: signed ? 'var(--success)' : 'var(--border)', color: signed ? '#fff' : 'var(--text-muted)' }}>
+                  <span style={{ padding:'4px 9px', borderRadius:999, fontSize:10, fontFamily:'Times New Roman', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.07em', background: signed ? 'var(--success)' : 'var(--border)', color: signed ? '#fff' : 'var(--text-muted)' }}>
                     {signed ? 'Signed' : 'Pending'}
                   </span>
                 </div>
@@ -333,7 +333,7 @@ export default function AgreementPage() {
           <div className="agreement-form-head" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, gap: 12, flexWrap: 'wrap' }}>
             <h2 style={{ fontSize: 20, fontWeight: 700 }}>Fill in details</h2>
             <button onClick={() => setPreview(!preview)}
-              style={{ padding: '8px 16px', borderRadius: 8, border: '1.5px solid var(--border)', background: preview ? 'var(--accent-light)' : 'var(--bg-subtle)', color: preview ? 'var(--accent)' : 'var(--text-secondary)', fontSize: 13, fontWeight: 600, fontFamily: 'Syne', cursor: 'pointer' }}>
+              style={{ padding: '8px 16px', borderRadius: 8, border: '1.5px solid var(--border)', background: preview ? 'var(--accent-light)' : 'var(--bg-subtle)', color: preview ? 'var(--accent)' : 'var(--text-secondary)', fontSize: 13, fontWeight: 600, fontFamily: 'Times New Roman', cursor: 'pointer' }}>
               {preview ? 'Hide preview' : 'Show preview'}
             </button>
           </div>
@@ -393,12 +393,12 @@ export default function AgreementPage() {
           {/* Actions */}
           <div className="agreement-actions" style={{ display: 'flex', gap: 12, marginTop: 24, flexWrap: 'wrap' }}>
             <button onClick={copyToClipboard}
-              style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 20px', borderRadius: 10, border: '1.5px solid var(--border)', background: 'var(--bg-card)', fontSize: 14, fontWeight: 700, fontFamily: 'Syne', color: 'var(--text-primary)', cursor: 'pointer' }}>
+              style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 20px', borderRadius: 10, border: '1.5px solid var(--border)', background: 'var(--bg-card)', fontSize: 14, fontWeight: 700, fontFamily: 'Times New Roman', color: 'var(--text-primary)', cursor: 'pointer' }}>
               {copied ? <CheckCircle size={15} style={{ color: 'var(--success)' }} /> : <Copy size={15} />}
               {copied ? 'Copied!' : 'Copy text'}
             </button>
             <button onClick={downloadTxt}
-              style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 24px', borderRadius: 10, background: 'var(--accent)', color: '#fff', fontSize: 14, fontWeight: 700, fontFamily: 'Syne', border: 'none', cursor: 'pointer' }}>
+              style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 24px', borderRadius: 10, background: 'var(--accent)', color: '#fff', fontSize: 14, fontWeight: 700, fontFamily: 'Times New Roman', border: 'none', cursor: 'pointer' }}>
               <Download size={15} /> Download .txt
             </button>
           </div>

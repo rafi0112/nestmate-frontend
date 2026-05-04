@@ -80,19 +80,19 @@ export default function BrowseClient({ listings, initialQuery }: Props) {
             placeholder="Search location, title, or description..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            style={{ width: '100%', padding: '12px 14px 12px 42px', borderRadius: 10, border: '1.5px solid var(--border)', background: 'var(--bg-card)', fontSize: 14, color: 'var(--text-primary)', fontFamily: 'DM Sans', outline: 'none' }}
+            style={{ width: '100%', padding: '12px 14px 12px 42px', borderRadius: 10, border: '1.5px solid var(--border)', background: 'var(--bg-card)', fontSize: 14, color: 'var(--text-primary)', fontFamily: 'Times New Roman', outline: 'none' }}
             onFocus={e => (e.target.style.borderColor = 'var(--accent)')}
             onBlur={e => (e.target.style.borderColor = 'var(--border)')}
           />
         </div>
 
         <select value={sort} onChange={e => setSort(e.target.value)}
-          style={{ padding: '12px 16px', borderRadius: 10, border: '1.5px solid var(--border)', background: 'var(--bg-card)', fontSize: 14, color: 'var(--text-primary)', fontFamily: 'DM Sans', cursor: 'pointer', outline: 'none' }}>
+          style={{ padding: '12px 16px', borderRadius: 10, border: '1.5px solid var(--border)', background: 'var(--bg-card)', fontSize: 14, color: 'var(--text-primary)', fontFamily: 'Times New Roman', cursor: 'pointer', outline: 'none' }}>
           {SORT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>
 
         <button onClick={() => setShowFilters(!showFilters)}
-          style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 18px', borderRadius: 10, border: `1.5px solid ${showFilters ? 'var(--accent)' : 'var(--border)'}`, background: showFilters ? 'var(--accent-light)' : 'var(--bg-card)', color: showFilters ? 'var(--accent)' : 'var(--text-primary)', cursor: 'pointer', fontSize: 14, fontWeight: 600, fontFamily: 'Syne', transition: 'all 0.15s' }}>
+          style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 18px', borderRadius: 10, border: `1.5px solid ${showFilters ? 'var(--accent)' : 'var(--border)'}`, background: showFilters ? 'var(--accent-light)' : 'var(--bg-card)', color: showFilters ? 'var(--accent)' : 'var(--text-primary)', cursor: 'pointer', fontSize: 14, fontWeight: 600, fontFamily: 'Times New Roman', transition: 'all 0.15s' }}>
           <SlidersHorizontal size={15} /> Filters {activeFilters.length > 0 && <span style={{ background: 'var(--accent)', color: '#fff', borderRadius: 100, width: 18, height: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700 }}>{activeFilters.length}</span>}
         </button>
 
@@ -112,7 +112,7 @@ export default function BrowseClient({ listings, initialQuery }: Props) {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 24 }}>
             {/* Room type */}
             <div>
-              <p style={{ fontSize: 12, fontWeight: 700, fontFamily: 'Syne', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 10 }}>Room Type</p>
+              <p style={{ fontSize: 12, fontWeight: 700, fontFamily: 'Times New Roman', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 10 }}>Room Type</p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                 {ROOM_TYPES.map(t => (
                   <button key={t} onClick={() => setRoomType(t)}
@@ -125,7 +125,7 @@ export default function BrowseClient({ listings, initialQuery }: Props) {
 
             {/* Availability */}
             <div>
-              <p style={{ fontSize: 12, fontWeight: 700, fontFamily: 'Syne', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 10 }}>Availability</p>
+              <p style={{ fontSize: 12, fontWeight: 700, fontFamily: 'Times New Roman', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 10 }}>Availability</p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                 {AVAILABILITY.map(a => (
                   <button key={a} onClick={() => setAvailability(a)}
@@ -150,7 +150,7 @@ export default function BrowseClient({ listings, initialQuery }: Props) {
 
             {/* Lifestyle */}
             <div>
-              <p style={{ fontSize: 12, fontWeight: 700, fontFamily: 'Syne', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 10 }}>Lifestyle</p>
+              <p style={{ fontSize: 12, fontWeight: 700, fontFamily: 'Times New Roman', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 10 }}>Lifestyle</p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                 {LIFESTYLE_TAGS.map(({ key, label }) => (
                   <button key={key} onClick={() => toggleTag(key)}

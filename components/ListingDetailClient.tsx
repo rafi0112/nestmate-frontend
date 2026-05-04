@@ -82,7 +82,7 @@ export default function ListingDetailClient({ listing, similar }: Props) {
             />
             <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 50%)' }} />
             <div style={{ position: 'absolute', bottom: 24, left: 28 }}>
-              <span style={{ padding: '5px 14px', borderRadius: 100, background: availColor, color: '#fff', fontSize: 12, fontWeight: 700, fontFamily: 'Syne' }}>
+              <span style={{ padding: '5px 14px', borderRadius: 100, background: availColor, color: '#fff', fontSize: 12, fontWeight: 700, fontFamily: 'Times New Roman' }}>
                 {listing.availability}
               </span>
             </div>
@@ -111,7 +111,7 @@ export default function ListingDetailClient({ listing, similar }: Props) {
               <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 15, color: 'var(--text-secondary)' }}>
                 <MapPin size={15} style={{ color: 'var(--accent)' }} /> {listing.location}
               </span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 18, fontWeight: 800, fontFamily: 'Syne', color: 'var(--text-primary)' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 18, fontWeight: 800, fontFamily: 'Times New Roman', color: 'var(--text-primary)' }}>
                 <Banknote size={16} style={{ color: 'var(--accent)' }} /> {Number(listing.rentAmount).toLocaleString()}<span style={{ fontSize: 13, fontWeight: 400, color: 'var(--text-muted)', marginLeft: 2 }}>/mo</span>
               </span>
               <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, color: 'var(--text-secondary)' }}>
@@ -168,11 +168,11 @@ export default function ListingDetailClient({ listing, similar }: Props) {
           {/* Poster card */}
           <div className="card" style={{ padding: 24, marginBottom: 16 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20, paddingBottom: 20, borderBottom: '1px solid var(--border)' }}>
-              <div style={{ width: 52, height: 52, borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 800, color: '#fff', fontFamily: 'Syne', flexShrink: 0 }}>
+              <div style={{ width: 52, height: 52, borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 800, color: '#fff', fontFamily: 'Times New Roman', flexShrink: 0 }}>
                 {(listing.userName || listing.userEmail || 'U')[0].toUpperCase()}
               </div>
               <div>
-                <p style={{ fontWeight: 700, fontSize: 15, fontFamily: 'Syne' }}>{listing.userName || 'Anonymous'}</p>
+                <p style={{ fontWeight: 700, fontSize: 15, fontFamily: 'Times New Roman' }}>{listing.userName || 'Anonymous'}</p>
                 <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>Posted this listing</p>
               </div>
             </div>
@@ -185,7 +185,7 @@ export default function ListingDetailClient({ listing, similar }: Props) {
                 width: '100%', padding: '14px', borderRadius: 12,
                 background: hasLiked ? 'var(--success-light)' : isOwner ? 'var(--bg-subtle)' : 'var(--accent)',
                 color: hasLiked ? 'var(--success)' : isOwner ? 'var(--text-muted)' : '#fff',
-                border: 'none', fontSize: 15, fontWeight: 700, fontFamily: 'Syne',
+                border: 'none', fontSize: 15, fontWeight: 700, fontFamily: 'Times New Roman',
                 cursor: isOwner ? 'not-allowed' : 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                 transition: 'all 0.15s', marginBottom: 12
@@ -196,7 +196,7 @@ export default function ListingDetailClient({ listing, similar }: Props) {
 
             {/* Contact info — unlocks after like */}
             <div style={{ padding: 16, borderRadius: 10, background: 'var(--bg-subtle)', border: '1px solid var(--border)' }}>
-              <p style={{ fontSize: 12, fontWeight: 700, fontFamily: 'Syne', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 12 }}>
+              <p style={{ fontSize: 12, fontWeight: 700, fontFamily: 'Times New Roman', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 12 }}>
                 Contact Info {!contactVisible && '🔒'}
               </p>
               {contactVisible ? (
@@ -212,7 +212,7 @@ export default function ListingDetailClient({ listing, similar }: Props) {
                   )}
                   <Link
                     href={`/messages?to=${encodeURIComponent(listing.userEmail || '')}&listingId=${encodeURIComponent(listing._id)}&listingTitle=${encodeURIComponent(listing.title)}&ownerName=${encodeURIComponent(listing.userName || listing.userEmail || 'Owner')}`}
-                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '12px', borderRadius: 10, background: 'var(--accent-2)', color: '#fff', fontSize: 14, fontWeight: 700, fontFamily: 'Syne' }}>
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '12px', borderRadius: 10, background: 'var(--accent-2)', color: '#fff', fontSize: 14, fontWeight: 700, fontFamily: 'Times New Roman' }}>
                     <Mail size={15} /> Send Message
                   </Link>
                 </div>
@@ -226,7 +226,7 @@ export default function ListingDetailClient({ listing, similar }: Props) {
 
           {/* Quick summary */}
           <div className="card" style={{ padding: 20 }}>
-            <h3 style={{ fontSize: 14, fontWeight: 700, fontFamily: 'Syne', marginBottom: 16, color: 'var(--text-secondary)' }}>Quick Summary</h3>
+            <h3 style={{ fontSize: 14, fontWeight: 700, fontFamily: 'Times New Roman', marginBottom: 16, color: 'var(--text-secondary)' }}>Quick Summary</h3>
             {[
               { icon: Banknote, label: 'Monthly Rent', value: `৳${Number(listing.rentAmount).toLocaleString()}` },
               { icon: Bed, label: 'Room Type', value: listing.roomType },
@@ -245,7 +245,7 @@ export default function ListingDetailClient({ listing, similar }: Props) {
 
           {isOwner && (
             <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
-              <Link href={`/edit-listing/${listing._id}`} style={{ flex: 1, textAlign: 'center', padding: '12px', borderRadius: 10, border: '1.5px solid var(--border)', fontSize: 14, fontWeight: 700, fontFamily: 'Syne', color: 'var(--text-primary)', background: 'var(--bg-card)' }}>
+              <Link href={`/edit-listing/${listing._id}`} style={{ flex: 1, textAlign: 'center', padding: '12px', borderRadius: 10, border: '1.5px solid var(--border)', fontSize: 14, fontWeight: 700, fontFamily: 'Times New Roman', color: 'var(--text-primary)', background: 'var(--bg-card)' }}>
                 Edit Listing
               </Link>
             </div>

@@ -185,7 +185,7 @@ function CompatibilityScore({ answers }: { answers: Answers }) {
             <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>💰 Budget range</h3>
             <p style={{ fontSize: 14, color: 'var(--text-secondary)' }}>Use this to filter listings</p>
           </div>
-          <span style={{ fontFamily: 'Syne', fontWeight: 800, fontSize: 22, color: 'var(--accent)' }}>{budgetMap[answers.budget] || 'Flexible'}</span>
+          <span style={{ fontFamily: 'Times New Roman', fontWeight: 800, fontSize: 22, color: 'var(--accent)' }}>{budgetMap[answers.budget] || 'Flexible'}</span>
         </div>
       </div>
 
@@ -202,11 +202,11 @@ function CompatibilityScore({ answers }: { answers: Answers }) {
       {/* CTA */}
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
         <Link href={`/browse?schedule=${answers.schedule}&budget=${answers.budget}`}
-          style={{ flex: 1, minWidth: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '14px 24px', borderRadius: 12, background: 'var(--accent)', color: '#fff', fontWeight: 700, fontFamily: 'Syne', fontSize: 15 }}>
+          style={{ flex: 1, minWidth: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '14px 24px', borderRadius: 12, background: 'var(--accent)', color: '#fff', fontWeight: 700, fontFamily: 'Times New Roman', fontSize: 15 }}>
           <Search size={16} /> Find matching listings
         </Link>
         <Link href="/add-listing"
-          style={{ flex: 1, minWidth: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '14px 24px', borderRadius: 12, border: '1.5px solid var(--border)', color: 'var(--text-primary)', fontWeight: 700, fontFamily: 'Syne', fontSize: 15, background: 'var(--bg-card)' }}>
+          style={{ flex: 1, minWidth: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '14px 24px', borderRadius: 12, border: '1.5px solid var(--border)', color: 'var(--text-primary)', fontWeight: 700, fontFamily: 'Times New Roman', fontSize: 15, background: 'var(--bg-card)' }}>
           Post your listing
         </Link>
       </div>
@@ -263,7 +263,7 @@ export default function CompatibilityPage() {
       <CompatibilityScore answers={answers} />
       <div style={{ textAlign: 'center', marginTop: 24 }}>
         <button onClick={() => { setDone(false); setStep(0); setAnswers({}); }}
-          style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-subtle)', fontSize: 13, cursor: 'pointer', color: 'var(--text-secondary)', fontFamily: 'DM Sans' }}>
+          style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-subtle)', fontSize: 13, cursor: 'pointer', color: 'var(--text-secondary)', fontFamily: 'Times New Roman' }}>
           <RotateCcw size={13} /> Retake quiz
         </button>
       </div>
@@ -274,7 +274,7 @@ export default function CompatibilityPage() {
     <div style={{ maxWidth: 700, margin: '0 auto', padding: '40px 24px' }}>
       {/* Header */}
       <div style={{ textAlign: 'center', marginBottom: 48 }}>
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 14px', background: 'var(--accent-light)', color: 'var(--accent)', borderRadius: 100, fontSize: 12, fontWeight: 700, fontFamily: 'Syne', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 16 }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 14px', background: 'var(--accent-light)', color: 'var(--accent)', borderRadius: 100, fontSize: 12, fontWeight: 700, fontFamily: 'Times New Roman', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 16 }}>
           🎯 Compatibility Quiz
         </div>
         <h1 style={{ fontSize: 34, fontWeight: 800, marginBottom: 8 }}>Find your ideal roommate match</h1>
@@ -318,7 +318,7 @@ export default function CompatibilityPage() {
               >
                 <span style={{ fontSize: 24, flexShrink: 0 }}>{opt.label.split(' ')[0]}</span>
                 <div style={{ flex: 1 }}>
-                  <p style={{ fontWeight: 700, fontSize: 15, color: selected ? 'var(--accent)' : 'var(--text-primary)', fontFamily: 'Syne', marginBottom: 2 }}>
+                  <p style={{ fontWeight: 700, fontSize: 15, color: selected ? 'var(--accent)' : 'var(--text-primary)', fontFamily: 'Times New Roman', marginBottom: 2 }}>
                     {opt.label.split(' ').slice(1).join(' ')}
                   </p>
                   <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{opt.desc}</p>
@@ -333,12 +333,12 @@ export default function CompatibilityPage() {
       {/* Navigation */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <button onClick={() => setStep(s => Math.max(0, s - 1))} disabled={step === 0}
-          style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 18px', borderRadius: 8, border: '1px solid var(--border)', background: step === 0 ? 'transparent' : 'var(--bg-subtle)', color: step === 0 ? 'var(--border)' : 'var(--text-secondary)', cursor: step === 0 ? 'not-allowed' : 'pointer', fontSize: 14, fontFamily: 'DM Sans' }}>
+          style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 18px', borderRadius: 8, border: '1px solid var(--border)', background: step === 0 ? 'transparent' : 'var(--bg-subtle)', color: step === 0 ? 'var(--border)' : 'var(--text-secondary)', cursor: step === 0 ? 'not-allowed' : 'pointer', fontSize: 14, fontFamily: 'Times New Roman' }}>
           <ArrowLeft size={14} /> Back
         </button>
         {answers[current.id] && (
           <button onClick={() => step < QUIZ_STEPS.length - 1 ? setStep(s => s + 1) : setDone(true)}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 20px', borderRadius: 8, background: 'var(--accent)', color: '#fff', border: 'none', cursor: 'pointer', fontSize: 14, fontWeight: 700, fontFamily: 'Syne' }}>
+            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 20px', borderRadius: 8, background: 'var(--accent)', color: '#fff', border: 'none', cursor: 'pointer', fontSize: 14, fontWeight: 700, fontFamily: 'Times New Roman' }}>
             {step < QUIZ_STEPS.length - 1 ? 'Next' : 'See my profile'} <ArrowRight size={14} />
           </button>
         )}

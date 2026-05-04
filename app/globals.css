@@ -1,8 +1,8 @@
-@import "tailwindcss";
+﻿@import "tailwindcss";
 
-/* Times New Roman is the global typeface for this app. */
+/* Georgia is the global typeface for this app. */
 
-/* ─── Light theme ─── */
+/* â”€â”€â”€ Light theme â”€â”€â”€ */
 :root {
   --bg:            #f7f5f1;
   --bg-card:       #ffffff;
@@ -13,12 +13,12 @@
   --text-secondary:#5a5650;
   --text-muted:    #9c9790;
 
-  --accent:        #1a5276;     /* deep navy – trustworthy, professional */
+  --accent:        #1a5276;     /* deep navy â€“ trustworthy, professional */
   --accent-hover:  #154360;
   --accent-light:  #eaf1f8;
   --accent-rgb:    26, 82, 118;
 
-  --accent-2:      #117a65;     /* teal – secondary actions */
+  --accent-2:      #117a65;     /* teal â€“ secondary actions */
   --accent-2-light:#e8f8f5;
 
   --success:       #1e8449;
@@ -45,7 +45,7 @@
   --shadow-xl:  0 24px 60px rgba(0,0,0,0.15);
 }
 
-/* ─── Dark theme ─── */
+/* â”€â”€â”€ Dark theme â”€â”€â”€ */
 [data-theme="dark"] {
   --bg:            #0e0d0b;
   --bg-card:       #19170f;
@@ -76,14 +76,14 @@
   --border-strong: #3e3a32;
 }
 
-/* ─── Reset & Base ─── */
+/* â”€â”€â”€ Reset & Base â”€â”€â”€ */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; font-size: 16px; width: 100%; overflow-x: hidden; }
 
 body {
   background: var(--bg);
   color: var(--text-primary);
-  font-family: 'Times New Roman', Times, Georgia, serif;
+  font-family: 'Times New Roman', Times, serif;
   font-size: 15px;
   line-height: 1.65;
   -webkit-font-smoothing: antialiased;
@@ -91,7 +91,7 @@ body {
 }
 
 body, body * {
-  font-family: 'Times New Roman', Times, Georgia, serif !important;
+  font-family: 'Times New Roman', Times, serif !important;
 }
 
 body {
@@ -104,9 +104,9 @@ main {
   overflow-x: hidden;
 }
 
-/* ─── Typography ─── */
+/* â”€â”€â”€ Typography â”€â”€â”€ */
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Times New Roman', Times, Georgia, serif;
+  font-family: 'Times New Roman', Times, serif;
   font-weight: 700;
   line-height: 1.15;
   color: var(--text-primary);
@@ -114,22 +114,22 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .display, .nav-logo-text, .btn-label {
-  font-family: 'Times New Roman', Times, Georgia, serif;
+  font-family: 'Times New Roman', Times, serif;
 }
 
 a { color: inherit; text-decoration: none; }
 
 input, textarea, select, button {
-  font-family: 'Times New Roman', Times, Georgia, serif;
+  font-family: 'Times New Roman', Times, serif;
   font-size: 15px;
 }
 
-/* ─── Scrollbar ─── */
+/* â”€â”€â”€ Scrollbar â”€â”€â”€ */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
 
-/* ─── Keyframes ─── */
+/* â”€â”€â”€ Keyframes â”€â”€â”€ */
 @keyframes fadeUp   { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
 @keyframes fadeIn   { from { opacity:0; } to { opacity:1; } }
 @keyframes shimmer  { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
@@ -137,7 +137,7 @@ input, textarea, select, button {
 @keyframes slideIn  { from{transform:translateX(-10px);opacity:0} to{transform:translateX(0);opacity:1} }
 @keyframes scaleIn  { from{transform:scale(.96);opacity:0} to{transform:scale(1);opacity:1} }
 
-/* ─── Loading skeleton ─── */
+/* â”€â”€â”€ Loading skeleton â”€â”€â”€ */
 .skeleton {
   background: linear-gradient(90deg, var(--bg-subtle) 25%, var(--bg-hover) 50%, var(--bg-subtle) 75%);
   background-size: 200% 100%;
@@ -145,7 +145,7 @@ input, textarea, select, button {
   border-radius: var(--radius-md);
 }
 
-/* ─── Card ─── */
+/* â”€â”€â”€ Card â”€â”€â”€ */
 .card {
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -162,11 +162,11 @@ input, textarea, select, button {
   border-left: 3px solid var(--accent);
 }
 
-/* ─── Buttons ─── */
+/* â”€â”€â”€ Buttons â”€â”€â”€ */
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 7px;
   padding: 10px 20px; border-radius: var(--radius-md);
-  font-family: 'Times New Roman', Times, Georgia, serif;
+  font-family: 'Times New Roman', Times, serif;
   font-size: 14px; font-weight: 700;
   cursor: pointer; border: none; outline: none;
   transition: all 0.15s ease; white-space: nowrap;
@@ -183,7 +183,7 @@ input, textarea, select, button {
 .btn-danger    { background: var(--danger-light); color: var(--danger); border: 1px solid #f5c6c4; }
 .btn-danger:hover { background: var(--danger); color: #fff; }
 
-/* ─── Form elements ─── */
+/* â”€â”€â”€ Form elements â”€â”€â”€ */
 .form-input {
   width: 100%;
   padding: 11px 14px;
@@ -204,7 +204,7 @@ input, textarea, select, button {
 
 .form-label {
   display: block;
-  font-family: 'Times New Roman', Times, Georgia, serif;
+  font-family: 'Times New Roman', Times, serif;
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
@@ -213,11 +213,11 @@ input, textarea, select, button {
   margin-bottom: 6px;
 }
 
-/* ─── Badges ─── */
+/* â”€â”€â”€ Badges â”€â”€â”€ */
 .badge {
   display: inline-flex; align-items: center; gap: 4px;
   padding: 3px 9px; border-radius: 100px;
-  font-family: 'Times New Roman', Times, Georgia, serif; font-size: 11px; font-weight: 700;
+  font-family: 'Times New Roman', Times, serif; font-size: 11px; font-weight: 700;
   letter-spacing: 0.04em; text-transform: uppercase;
 }
 .badge-navy    { background: var(--accent-light); color: var(--accent); }
@@ -226,15 +226,15 @@ input, textarea, select, button {
 .badge-gold    { background: var(--gold-light); color: var(--gold); }
 .badge-neutral { background: var(--bg-subtle); color: var(--text-secondary); border: 1px solid var(--border); }
 
-/* ─── Section tag ─── */
+/* â”€â”€â”€ Section tag â”€â”€â”€ */
 .section-tag {
   display: inline-flex; align-items: center; gap: 6px;
   padding: 5px 13px; border-radius: 100px;
-  font-family: 'Times New Roman', Times, Georgia, serif; font-size: 11px; font-weight: 700;
+  font-family: 'Times New Roman', Times, serif; font-size: 11px; font-weight: 700;
   letter-spacing: 0.09em; text-transform: uppercase; margin-bottom: 14px;
 }
 
-/* ─── Join code display ─── */
+/* â”€â”€â”€ Join code display â”€â”€â”€ */
 .join-code {
   font-family: 'Courier New', Courier, monospace;
   font-size: 28px; font-weight: 700; letter-spacing: 0.25em;
@@ -244,17 +244,17 @@ input, textarea, select, button {
   display: inline-block; text-align: center; user-select: all;
 }
 
-/* ─── Message bubble extras ─── */
+/* â”€â”€â”€ Message bubble extras â”€â”€â”€ */
 .msg-bubble-me   { background: var(--accent); color: #fff; border-radius: 18px 18px 4px 18px; }
 .msg-bubble-them { background: var(--bg-subtle); color: var(--text-primary); border: 1px solid var(--border); border-radius: 18px 18px 18px 4px; }
 
-/* ─── Taka symbol utility ─── */
-.taka::before { content: '৳'; }
+/* â”€â”€â”€ Taka symbol utility â”€â”€â”€ */
+.taka::before { content: 'à§³'; }
 
-/* ─── Divider ─── */
+/* â”€â”€â”€ Divider â”€â”€â”€ */
 .divider { height: 1px; background: var(--border); width: 100%; }
 
-/* ─── Focus ring ─── */
+/* â”€â”€â”€ Focus ring â”€â”€â”€ */
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;

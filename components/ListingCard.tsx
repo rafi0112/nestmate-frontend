@@ -53,7 +53,7 @@ export default function ListingCard({ listing, showActions, onDelete }: Props) {
           onMouseLeave={e => { (e.currentTarget as HTMLImageElement).style.transform = 'scale(1)'; }}
         />
         {/* Availability badge */}
-        <span style={{ position: 'absolute', top: 12, right: 12, padding: '4px 10px', borderRadius: 100, fontSize: 11, fontWeight: 700, fontFamily: 'Syne, serif', color: availColor, background: availBg, backdropFilter: 'blur(8px)' }}>
+        <span style={{ position: 'absolute', top: 12, right: 12, padding: '4px 10px', borderRadius: 100, fontSize: 11, fontWeight: 700, fontFamily: 'Times New Roman', color: availColor, background: availBg, backdropFilter: 'blur(8px)' }}>
           {listing.availability}
         </span>
         {/* Room type badge */}
@@ -73,7 +73,7 @@ export default function ListingCard({ listing, showActions, onDelete }: Props) {
           <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 13, color: 'var(--text-secondary)' }}>
             <MapPin size={13} style={{ color: 'var(--accent)' }} /> {listing.location}
           </span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'Syne, serif' }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'Times New Roman' }}>
             <Banknote size={13} style={{ color: 'var(--accent)' }} /> ৳{Number(listing.rentAmount).toLocaleString()}<span style={{ fontWeight: 400, fontSize: 12, color: 'var(--text-muted)' }}>/mo</span>
           </span>
         </div>
@@ -117,15 +117,15 @@ export default function ListingCard({ listing, showActions, onDelete }: Props) {
           <div style={{ display: 'flex', gap: 8 }}>
             {showActions && isOwner && (
               <>
-                <Link href={`/edit-listing/${listing._id}`} style={{ padding: '7px 12px', borderRadius: 8, border: '1px solid var(--border)', fontSize: 12, fontWeight: 600, fontFamily: 'Syne, serif', color: 'var(--text-secondary)', background: 'var(--bg-subtle)' }}>
+                <Link href={`/edit-listing/${listing._id}`} style={{ padding: '7px 12px', borderRadius: 8, border: '1px solid var(--border)', fontSize: 12, fontWeight: 600, fontFamily: 'Times New Roman', color: 'var(--text-secondary)', background: 'var(--bg-subtle)' }}>
                   Edit
                 </Link>
-                <button onClick={() => onDelete?.(listing._id)} style={{ padding: '7px 12px', borderRadius: 8, border: '1px solid #fee2e2', fontSize: 12, fontWeight: 600, fontFamily: 'Syne, serif', color: '#dc2626', background: '#fff5f5', cursor: 'pointer' }}>
+                <button onClick={() => onDelete?.(listing._id)} style={{ padding: '7px 12px', borderRadius: 8, border: '1px solid #fee2e2', fontSize: 12, fontWeight: 600, fontFamily: 'Times New Roman', color: '#dc2626', background: '#fff5f5', cursor: 'pointer' }}>
                   Delete
                 </button>
               </>
             )}
-            <Link href={`/listings/${listing._id}`} style={{ padding: '8px 16px', borderRadius: 8, background: 'var(--accent)', color: '#fff', fontSize: 13, fontWeight: 700, fontFamily: 'Syne, serif' }}>
+            <Link href={`/listings/${listing._id}`} style={{ padding: '8px 16px', borderRadius: 8, background: 'var(--accent)', color: '#fff', fontSize: 13, fontWeight: 700, fontFamily: 'Times New Roman' }}>
               View →
             </Link>
           </div>

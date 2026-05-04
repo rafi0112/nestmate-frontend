@@ -13,7 +13,7 @@ export default function Footer() {
               <div style={{ width: 36, height: 36, background: 'var(--accent)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Users size={20} color="#fff" />
               </div>
-              <span style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: 20, color: 'var(--text-primary)' }}>
+              <span style={{ fontFamily: 'Times New Roman', fontWeight: 800, fontSize: 20, color: 'var(--text-primary)' }}>
                 Nest<span style={{ color: 'var(--accent)' }}>Mate</span>
               </span>
             </div>
@@ -31,7 +31,7 @@ export default function Footer() {
 
           {/* Links */}
           <div>
-            <h4 style={{ fontFamily: 'Syne', fontWeight: 700, fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: 16 }}>Platform</h4>
+            <h4 style={{ fontFamily: 'Times New Roman', fontWeight: 700, fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: 16 }}>Platform</h4>
             {[['/', 'Home'], ['/browse', 'Browse Listings'], ['/add-listing', 'Post a Listing'], ['/my-listings', 'My Listings']].map(([href, label]) => (
               <Link key={href} href={href} style={{ display: 'block', fontSize: 14, color: 'var(--text-secondary)', marginBottom: 10, transition: 'color 0.15s' }}
                 onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent)')}
@@ -42,7 +42,7 @@ export default function Footer() {
           </div>
 
           <div>
-            <h4 style={{ fontFamily: 'Syne', fontWeight: 700, fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: 16 }}>Account</h4>
+            <h4 style={{ fontFamily: 'Times New Roman', fontWeight: 700, fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: 16 }}>Account</h4>
             {[['/login', 'Log In'], ['/register', 'Sign Up'], ['/my-listings', 'My Profile']].map(([href, label]) => (
               <Link key={href} href={href} style={{ display: 'block', fontSize: 14, color: 'var(--text-secondary)', marginBottom: 10, transition: 'color 0.15s' }}
                 onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent)')}
@@ -53,11 +53,11 @@ export default function Footer() {
           </div>
 
           <div>
-            <h4 style={{ fontFamily: 'Syne', fontWeight: 700, fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: 16 }}>Stats</h4>
+            <h4 style={{ fontFamily: 'Times New Roman', fontWeight: 700, fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: 16 }}>Stats</h4>
             {[['10K+', 'Active Listings'], ['50K+', 'Happy Roommates'], ['200+', 'Cities'], ['4.9★', 'Rating']].map(([num, label]) => (
               <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
                 <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{label}</span>
-                <span style={{ fontFamily: 'Syne', fontWeight: 700, fontSize: 14, color: 'var(--accent)' }}>{num}</span>
+                <span style={{ fontFamily: 'Times New Roman', fontWeight: 700, fontSize: 14, color: 'var(--accent)' }}>{num}</span>
               </div>
             ))}
           </div>

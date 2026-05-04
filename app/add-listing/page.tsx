@@ -56,7 +56,7 @@ export default function AddListingPage() {
         <div style={{ fontSize: 48, marginBottom: 16 }}>🔐</div>
         <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 8 }}>Login required</h2>
         <p style={{ color: 'var(--text-secondary)', marginBottom: 28 }}>You need to be logged in to post a listing.</p>
-        <Link href="/login" style={{ padding: '12px 28px', borderRadius: 10, background: 'var(--accent)', color: '#fff', fontWeight: 700, fontFamily: 'Syne' }}>Log In</Link>
+        <Link href="/login" style={{ padding: '12px 28px', borderRadius: 10, background: 'var(--accent)', color: '#fff', fontWeight: 700, fontFamily: 'Times New Roman' }}>Log In</Link>
       </div>
     );
   }
@@ -99,8 +99,8 @@ export default function AddListingPage() {
     finally { setLoading(false); }
   };
 
-  const inputStyle = { width: '100%', padding: '12px 14px', borderRadius: 10, border: '1.5px solid var(--border)', background: 'var(--bg-card)', fontSize: 14, color: 'var(--text-primary)', fontFamily: 'DM Sans', outline: 'none', transition: 'border-color 0.15s' };
-  const labelStyle = { display: 'block', fontSize: 12, fontWeight: 700, fontFamily: 'Syne', textTransform: 'uppercase' as const, letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 8 };
+  const inputStyle = { width: '100%', padding: '12px 14px', borderRadius: 10, border: '1.5px solid var(--border)', background: 'var(--bg-card)', fontSize: 14, color: 'var(--text-primary)', fontFamily: 'Times New Roman', outline: 'none', transition: 'border-color 0.15s' };
+  const labelStyle = { display: 'block', fontSize: 12, fontWeight: 700, fontFamily: 'Times New Roman', textTransform: 'uppercase' as const, letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 8 };
 
   return (
     <div style={{ maxWidth: 800, margin: '0 auto', padding: '40px 24px' }}>
@@ -222,11 +222,11 @@ export default function AddListingPage() {
 
         {/* Submit */}
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
-          <Link href="/my-listings" style={{ padding: '12px 24px', borderRadius: 10, border: '1.5px solid var(--border)', fontSize: 14, fontWeight: 700, fontFamily: 'Syne', color: 'var(--text-primary)', background: 'var(--bg-card)' }}>
+          <Link href="/my-listings" style={{ padding: '12px 24px', borderRadius: 10, border: '1.5px solid var(--border)', fontSize: 14, fontWeight: 700, fontFamily: 'Times New Roman', color: 'var(--text-primary)', background: 'var(--bg-card)' }}>
             Cancel
           </Link>
           <button type="submit" disabled={loading}
-            style={{ padding: '12px 32px', borderRadius: 10, background: loading ? 'var(--border)' : 'var(--accent)', color: loading ? 'var(--text-muted)' : '#fff', fontSize: 15, fontWeight: 700, fontFamily: 'Syne', border: 'none', cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.15s' }}>
+            style={{ padding: '12px 32px', borderRadius: 10, background: loading ? 'var(--border)' : 'var(--accent)', color: loading ? 'var(--text-muted)' : '#fff', fontSize: 15, fontWeight: 700, fontFamily: 'Times New Roman', border: 'none', cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.15s' }}>
             <Plus size={16} />
             {loading ? 'Posting...' : 'Post Listing'}
           </button>
