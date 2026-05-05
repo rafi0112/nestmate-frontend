@@ -10,7 +10,27 @@ import { Plus, BookMarked, Users, Copy, CheckCircle, LogIn, Home, Hash } from 'l
 
 interface Household {
   _id: string; listingId: string; ownerEmail: string;
-  listingTitle: string; joinCode: string; members: string[];
+  listingTitle: string; joinCode: string; members?: string[]; memberUids?: string[];
+}
+
+function getHouseholdMembers(household: Household | null | undefined) {
+  return household?.memberUids ?? household?.members ?? [];
+}
+
+function getCardTransform(offset: number, dragOffset: number, dragging: boolean) {
+  const baseX = offset * 120;
+  const x = baseX + (offset === 0 ? dragOffset : dragOffset * 0.18);
+  const absOffset = Math.abs(offset);
+  const scale = offset === 0 ? 1.04 : absOffset === 1 ? 0.92 : 0.86;
+  const rotate = offset === 0 ? dragOffset / 35 : offset < 0 ? -5 : 5;
+  const opacity = absOffset > 2 ? 0 : offset === 0 ? 1 : absOffset === 1 ? 0.7 : 0.32;
+
+  return {
+    transform: `translate(-50%, -50%) translateX(${x}px) scale(${scale}) rotate(${rotate}deg)`,
+    opacity,
+    zIndex: 50 - absOffset,
+    transition: dragging ? 'none' : 'transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.35s ease',
+  } as const;
 }
 
 function HouseholdCard({ listing, userEmail }: { listing: Listing; userEmail: string }) {
@@ -18,6 +38,8 @@ function HouseholdCard({ listing, userEmail }: { listing: Listing; userEmail: st
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [copied, setCopied] = useState(false);
+  const members = getHouseholdMembers(household);
+  const isActiveHousehold = members.length > 1;
 
   useEffect(() => {
     getHousehold(listing._id).then(h => { setHousehold(h); setLoading(false); }).catch(() => setLoading(false));
@@ -57,6 +79,11 @@ function HouseholdCard({ listing, userEmail }: { listing: Listing; userEmail: st
 
       {household ? (
         <div>
+          {isActiveHousehold && (
+            <div style={{ display:'inline-flex', alignItems:'center', gap:6, padding:'5px 10px', borderRadius:999, background:'var(--success-light)', color:'var(--success)', border:'1px solid var(--success)', fontSize:11, fontWeight:800, textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:12 }}>
+              <CheckCircle size={13} /> Active
+            </div>
+          )}
           <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 14, lineHeight: 1.5 }}>
             Share this 6-character code with your roommates so they can join this household.
           </p>
@@ -74,7 +101,7 @@ function HouseholdCard({ listing, userEmail }: { listing: Listing; userEmail: st
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <Users size={13} style={{ color: 'var(--text-muted)' }} />
             <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-              {household.members.length} member{household.members.length !== 1 ? 's' : ''} · {household.members.join(', ')}
+              {members.length} member{members.length !== 1 ? 's' : ''}{members.length > 0 ? ` · ${members.join(', ')}` : ''}
             </span>
           </div>
         </div>
@@ -111,10 +138,42 @@ function JoinHouseholdModal({ userEmail, onClose }: { userEmail: string; onClose
   };
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }} onClick={onClose}>
-      <div style={{ background: 'var(--bg-card)', borderRadius: 18, padding: 36, width: '100%', maxWidth: 440, boxShadow: 'var(--shadow-xl)' }} onClick={e => e.stopPropagation()}>
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        background: 'rgba(0,0,0,0.5)',
+        zIndex: 1000,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 24,
+      }}
+      onClick={onClose}
+    >
+      <div
+        style={{
+          background: 'var(--bg-card)',
+          borderRadius: 18,
+          padding: 36,
+          width: '100%',
+          maxWidth: 440,
+          boxShadow: 'var(--shadow-xl)',
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
-          <div style={{ width: 44, height: 44, borderRadius: 12, background: 'var(--accent-light)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: 12,
+              background: 'var(--accent-light)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
             <LogIn size={20} style={{ color: 'var(--accent)' }} />
           </div>
           <div>
@@ -124,24 +183,84 @@ function JoinHouseholdModal({ userEmail, onClose }: { userEmail: string; onClose
         </div>
 
         <div style={{ marginBottom: 20 }}>
-          <label style={{ display: 'block', fontSize: 11, fontFamily: 'Syne,serif', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: 8 }}>Join Code</label>
+          <label
+            style={{
+              display: 'block',
+              fontSize: 11,
+              fontFamily: 'Syne,serif',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.08em',
+              color: 'var(--text-muted)',
+              marginBottom: 8,
+            }}
+          >
+            Join Code
+          </label>
           <input
             type="text"
             value={code}
-            onChange={e => setCode(e.target.value.toUpperCase().slice(0, 6))}
+            onChange={(e) => setCode(e.target.value.toUpperCase().slice(0, 6))}
             placeholder="E.g. AB3X7K"
             maxLength={6}
-            style={{ width: '100%', padding: '14px 18px', borderRadius: 10, border: '2px solid var(--border)', background: 'var(--bg)', fontSize: 22, fontFamily: 'Courier New, monospace', fontWeight: 700, letterSpacing: '0.25em', color: 'var(--accent)', textAlign: 'center', outline: 'none', transition: 'border-color 0.15s', textTransform: 'uppercase' }}
-            onFocus={e => (e.target.style.borderColor = 'var(--accent)')}
-            onBlur={e => (e.target.style.borderColor = 'var(--border)')}
-            onKeyDown={e => e.key === 'Enter' && handleJoin()}
+            style={{
+              width: '100%',
+              padding: '14px 18px',
+              borderRadius: 10,
+              border: '2px solid var(--border)',
+              background: 'var(--bg)',
+              fontSize: 22,
+              fontFamily: 'Courier New, monospace',
+              fontWeight: 700,
+              letterSpacing: '0.25em',
+              color: 'var(--accent)',
+              textAlign: 'center',
+              outline: 'none',
+              transition: 'border-color 0.15s',
+              textTransform: 'uppercase',
+            }}
+            onFocus={(e) => ((e.target as HTMLInputElement).style.borderColor = 'var(--accent)')}
+            onBlur={(e) => ((e.target as HTMLInputElement).style.borderColor = 'var(--border)')}
+            onKeyDown={(e) => e.key === 'Enter' && handleJoin()}
           />
           <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 8, fontStyle: 'italic' }}>Codes are 6 characters, case-insensitive.</p>
         </div>
 
         <div style={{ display: 'flex', gap: 10 }}>
-          <button onClick={onClose} style={{ flex: 1, padding: '12px', borderRadius: 10, border: '1.5px solid var(--border)', background: 'var(--bg-subtle)', fontSize: 14, fontWeight: 600, fontFamily: 'Syne,serif', color: 'var(--text-secondary)', cursor: 'pointer' }}>Cancel</button>
-          <button onClick={handleJoin} disabled={loading || code.length < 5} style={{ flex: 2, padding: '12px', borderRadius: 10, background: loading || code.length < 5 ? 'var(--border)' : 'var(--accent)', color: loading || code.length < 5 ? 'var(--text-muted)' : '#fff', fontSize: 14, fontWeight: 700, fontFamily: 'Syne,serif', border: 'none', cursor: loading || code.length < 5 ? 'not-allowed' : 'pointer', transition: 'all 0.15s' }}>
+          <button
+            onClick={onClose}
+            style={{
+              flex: 1,
+              padding: '12px',
+              borderRadius: 10,
+              border: '1.5px solid var(--border)',
+              background: 'var(--bg-subtle)',
+              fontSize: 14,
+              fontWeight: 600,
+              fontFamily: 'Syne,serif',
+              color: 'var(--text-secondary)',
+              cursor: 'pointer',
+            }}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleJoin}
+            disabled={loading || code.length < 5}
+            style={{
+              flex: 2,
+              padding: '12px',
+              borderRadius: 10,
+              background: loading || code.length < 5 ? 'var(--border)' : 'var(--accent)',
+              color: loading || code.length < 5 ? 'var(--text-muted)' : '#fff',
+              fontSize: 14,
+              fontWeight: 700,
+              fontFamily: 'Syne,serif',
+              border: 'none',
+              cursor: loading || code.length < 5 ? 'not-allowed' : 'pointer',
+              transition: 'all 0.15s',
+            }}
+          >
             {loading ? 'Joining…' : 'Join Household'}
           </button>
         </div>
@@ -155,14 +274,26 @@ export default function MyListingsPage() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const [showJoin, setShowJoin] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState(0);
+  const [dragStartX, setDragStartX] = useState<number | null>(null);
 
   useEffect(() => {
     if (!currentUser?.email) { setLoading(false); return; }
     getMyListings(currentUser.email).then((all: Listing[]) => {
-      setListings(all.filter((l: Listing) => (l.userEmail || l.ownerEmail) === currentUser.email));
+      const myListings = all.filter((l: Listing) => (l.userEmail || l.ownerEmail) === currentUser.email);
+      setListings(myListings);
+      setActiveIndex(0);
       setLoading(false);
     }).catch(() => setLoading(false));
   }, [currentUser]);
+
+  useEffect(() => {
+    if (activeIndex > listings.length - 1) {
+      setActiveIndex(Math.max(0, listings.length - 1));
+    }
+  }, [activeIndex, listings.length]);
 
   if (!currentUser) return (
     <div style={{ maxWidth: 560, margin: '80px auto', padding: '0 24px', textAlign: 'center' }}>
@@ -175,8 +306,50 @@ export default function MyListingsPage() {
 
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this listing?')) return;
-    try { await deleteListing(id); setListings(l => l.filter(x => x._id !== id)); toast.success('Listing deleted'); }
+    try {
+      await deleteListing(id);
+      setListings((l) => l.filter((x) => x._id !== id));
+      setActiveIndex((current) => Math.max(0, Math.min(current, listings.length - 2)));
+      toast.success('Listing deleted');
+    }
     catch { toast.error('Failed to delete'); }
+  };
+
+  const advanceCard = (direction: 1 | -1) => {
+    if (listings.length < 2) return;
+    setActiveIndex((current) => {
+      const next = current + direction;
+      if (next < 0 || next >= listings.length) return current;
+      return next;
+    });
+    setDragOffset(0);
+    setDragging(false);
+    setDragStartX(null);
+  };
+
+  const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (listings.length < 2) return;
+    setDragging(true);
+    setDragStartX(event.clientX);
+  };
+
+  const handlePointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (!dragging || dragStartX === null) return;
+    setDragOffset(event.clientX - dragStartX);
+  };
+
+  const handlePointerUp = () => {
+    if (!dragging) return;
+    const threshold = 90;
+    if (dragOffset > threshold) {
+      advanceCard(-1);
+    } else if (dragOffset < -threshold) {
+      advanceCard(1);
+    } else {
+      setDragOffset(0);
+      setDragging(false);
+      setDragStartX(null);
+    }
   };
 
   return (
@@ -201,17 +374,6 @@ export default function MyListingsPage() {
         </div>
       </div>
 
-      {/* Info banner about household codes */}
-      <div style={{ padding: '16px 20px', borderRadius: 12, background: 'var(--accent-light)', border: '1px solid var(--accent)', marginBottom: 36, display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-        <Hash size={18} style={{ color: 'var(--accent)', flexShrink: 0, marginTop: 2 }} />
-        <div>
-          <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--accent)', fontFamily: 'Syne,serif', marginBottom: 4 }}>Household Join Codes</p>
-          <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.55 }}>
-            Each listing can have a <strong>household</strong> with a unique 6-character join code. Share it with prospective roommates — they paste the code on this page to instantly join your room group. You can also join someone else's household using the <em>Join via Code</em> button above.
-          </p>
-        </div>
-      </div>
-
       {/* Listings */}
       {loading ? (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px,1fr))', gap: 28 }}>
@@ -227,17 +389,109 @@ export default function MyListingsPage() {
           </Link>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
-          {listings.map(l => (
-            <div key={l._id} style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 18, padding: 24, boxShadow: 'var(--shadow-sm)' }}>
-              {/* Listing card rendered inline */}
-              <ListingCard listing={l} showActions onDelete={handleDelete} />
-              {/* Household section below each listing */}
-              <HouseholdCard listing={l} userEmail={currentUser.email!} />
-            </div>
-          ))}
+        <div
+          style={{
+            position: 'relative',
+            minHeight: 760,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            overflow: 'hidden',
+            padding: '40px 0 20px',
+          }}
+        >
+          <div style={{ position: 'absolute', inset: 'auto 0 10px', textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>
+            Swipe left or right to browse your listings
+          </div>
+
+          {listings.map((listing, index) => {
+            const offset = index - activeIndex;
+            if (Math.abs(offset) > 2) return null;
+
+            return (
+              <div
+                key={listing._id}
+                style={{
+                  position: 'absolute',
+                  width: 'min(100%, 520px)',
+                  left: '50%',
+                  top: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  ...getCardTransform(offset, dragOffset, dragging),
+                }}
+                onPointerDown={offset === 0 ? handlePointerDown : undefined}
+                onPointerMove={offset === 0 ? handlePointerMove : undefined}
+                onPointerUp={offset === 0 ? handlePointerUp : undefined}
+                onPointerCancel={offset === 0 ? handlePointerUp : undefined}
+                onPointerLeave={offset === 0 ? handlePointerUp : undefined}
+              >
+                <div style={{ boxShadow: offset === 0 ? 'var(--shadow-xl)' : 'var(--shadow-lg)', borderRadius: 20, transformOrigin: 'center center' }}>
+                  <ListingCard listing={listing} onDelete={() => handleDelete(listing._id)} />
+                </div>
+                <div style={{ marginTop: 16, opacity: offset === 0 ? 1 : 0.65, transform: offset === 0 ? 'scale(1)' : 'scale(0.96)', transition: 'all 0.35s ease' }}>
+                  <HouseholdCard listing={listing} userEmail={currentUser.email!} />
+                </div>
+              </div>
+            );
+          })}
+
+          {listings.length > 1 && (
+            <>
+              <button
+                type="button"
+                onClick={() => advanceCard(-1)}
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  width: 48,
+                  height: 48,
+                  borderRadius: 999,
+                  border: '1px solid var(--border)',
+                  background: 'var(--bg-card)',
+                  color: 'var(--text-primary)',
+                  boxShadow: 'var(--shadow-sm)',
+                  cursor: 'pointer',
+                }}
+              >
+                ←
+              </button>
+              <button
+                type="button"
+                onClick={() => advanceCard(1)}
+                style={{
+                  position: 'absolute',
+                  right: 0,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  width: 48,
+                  height: 48,
+                  borderRadius: 999,
+                  border: '1px solid var(--border)',
+                  background: 'var(--bg-card)',
+                  color: 'var(--text-primary)',
+                  boxShadow: 'var(--shadow-sm)',
+                  cursor: 'pointer',
+                }}
+              >
+                →
+              </button>
+            </>
+          )}
         </div>
       )}
+
+      {/* Info banner about household codes */}
+      <div style={{ padding: '16px 20px', borderRadius: 12, background: 'var(--accent-light)', border: '1px solid var(--accent)', marginTop: 32, display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+        <Hash size={18} style={{ color: 'var(--accent)', flexShrink: 0, marginTop: 2 }} />
+        <div>
+          <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--accent)', fontFamily: 'Syne,serif', marginBottom: 4 }}>Household Join Codes</p>
+          <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.55 }}>
+            Each listing can have a <strong>household</strong> with a unique 6-character join code. Share it with prospective roommates — they paste the code on this page to instantly join your room group. You can also join someone else's household using the <em>Join via Code</em> button above.
+          </p>
+        </div>
+      </div>
 
       {/* Join modal */}
       {showJoin && <JoinHouseholdModal userEmail={currentUser.email!} onClose={() => setShowJoin(false)} />}

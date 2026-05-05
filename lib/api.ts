@@ -71,8 +71,12 @@ export const createHousehold = (payload: {
 export const updateHousehold = (id: string, data: { monthlyFee?: number; listingTitle?: string; name?: string; settings?: Record<string, unknown> }) =>
   apiFetch(`${API}/groups/${id}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ ...data, name: data.name || data.listingTitle }) });
 
-export const joinHousehold = (joinCode: string, userEmail: string, userUid?: string) =>
-  apiFetch(`${API}/groups/join`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ joinCode, userEmail, userUid: userUid || userEmail }) });
+export const joinHousehold = (joinCode: string, userEmail: string, userUid?: string, acceptedAgreement = false) =>
+  apiFetch('/api/households/join', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({ joinCode, userEmail, userUid: userUid || userEmail, acceptedAgreement }),
+  });
 
 // ─── Notifications ─────────────────────────────────────────────────────────
 export type NotificationPayload = {

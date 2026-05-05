@@ -287,6 +287,11 @@ export default function AgreementPage() {
             </div>
           </div>
           <div style={{ display:'flex', gap:10, flexWrap:'wrap' }}>
+            {household && householdMembers.length > 1 && (
+              <span style={{ display:'inline-flex', alignItems:'center', gap:6, padding:'11px 14px', borderRadius:10, border:'1px solid var(--success)', background:'var(--success-light)', color:'var(--success)', fontFamily:'Times New Roman', fontWeight:700, fontSize:13 }}>
+                <CheckCircle size={14} /> Active
+              </span>
+            )}
             <button onClick={markSigned} disabled={!household || signing || isSigned}
               style={{ display:'inline-flex', alignItems:'center', gap:8, padding:'11px 16px', borderRadius:10, border:'none', background:!household || isSigned ? 'var(--border)' : 'var(--accent)', color:!household || isSigned ? 'var(--text-muted)' : '#fff', cursor:!household || signing || isSigned ? 'not-allowed' : 'pointer', fontFamily:'Times New Roman', fontWeight:700 }}>
               {signing ? <Loader2 size={14} style={{ animation:'spin 1s linear infinite' }} /> : <Check size={14} />}

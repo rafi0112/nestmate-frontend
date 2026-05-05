@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import {
   createNotification, getHouseholdByMember, getNotifications, createHousehold, joinHousehold,
+  getHouseholds,
   getLedger, addLedgerEntry, deleteLedgerEntry,
   getMeals, upsertMeal,
   getPayments, createPayment,
@@ -606,6 +607,10 @@ export default function HouseholdPage() {
   const [copied, setCopied] = useState(false);
   const [joinModal, setJoinModal] = useState(false);
   const [joinCode, setJoinCode] = useState('');
+  const [joinPreview, setJoinPreview] = useState<Household | null>(null);
+  const [joinPreviewNotifications, setJoinPreviewNotifications] = useState<HouseholdNotification[]>([]);
+  const [joinLookupLoading, setJoinLookupLoading] = useState(false);
+  const [joinAgreementAccepted, setJoinAgreementAccepted] = useState(false);
   const [creating, setCreating] = useState(false);
   const [createForm, setCreateForm] = useState({ listingTitle:'', monthlyFee:'' });
   const [notifications, setNotifications] = useState<HouseholdNotification[]>([]);
@@ -640,21 +645,56 @@ export default function HouseholdPage() {
   };
 
   const handleJoin = async () => {
-    if (joinCode.trim().length<5) return toast.error('Enter a valid 6-character code');
+    if (!joinPreview) return toast.error('Review the household agreement first');
+    if (!joinAgreementAccepted) return toast.error('Accept the agreement before joining');
     try {
-      const h = await joinHousehold(joinCode, currentUser!.email!);
+      const h = await joinHousehold(joinCode, currentUser!.email!, currentUser?.uid, true);
       if (h.error) throw new Error(h.error);
       await createNotification({
         householdId: h._id,
         fromEmail: currentUser!.email!,
         toEmail: currentUser!.email!,
-        type: 'agreement_reminder',
-        title: 'Sign roommate agreement',
-        message: `You joined ${h.listingTitle}. Please sign the roommate agreement.`,
+        type: 'agreement_signed',
+        title: 'Agreement signed',
+        message: `${currentUser.displayName || currentUser!.email!} accepted the household agreement.`,
       });
       setHh(h); setJoinModal(false);
+      setJoinPreview(null);
+      setJoinPreviewNotifications([]);
+      setJoinAgreementAccepted(false);
       toast.success('Joined household!');
     } catch (e: unknown) { toast.error(e instanceof Error ? e.message : 'Invalid code'); }
+  };
+
+  const reviewJoinAgreement = async () => {
+    const code = joinCode.trim().toUpperCase();
+    if (code.length < 5) return toast.error('Enter a valid 6-character code');
+    setJoinLookupLoading(true);
+    try {
+      const households = await getHouseholds();
+      const household = Array.isArray(households)
+        ? households.find(item => (item?.joinCode || '').toUpperCase() === code)
+        : null;
+
+      if (!household) {
+        setJoinPreview(null);
+        setJoinPreviewNotifications([]);
+        setJoinAgreementAccepted(false);
+        toast.error('No household found for that code');
+        return;
+      }
+
+      const typedHousehold = household as Household;
+      setJoinPreview(typedHousehold);
+      setJoinAgreementAccepted(false);
+
+      const items = await getNotifications({ householdId: typedHousehold._id });
+      setJoinPreviewNotifications(Array.isArray(items) ? items as HouseholdNotification[] : []);
+    } catch {
+      toast.error('Could not load the household agreement');
+    } finally {
+      setJoinLookupLoading(false);
+    }
   };
 
   const copyCode = () => {
@@ -665,14 +705,14 @@ export default function HouseholdPage() {
   };
 
   if (!currentUser) return (
-    <div style={{ maxWidth:480, margin:'100px auto', textAlign:'center', padding:24 }}>
+    <div className="household-page" style={{ maxWidth:480, margin:'100px auto', textAlign:'center', padding:24 }}>
       <h2 style={{ fontSize:26, fontWeight:700, marginBottom:12 }}>Sign in to view your household</h2>
       <Link href="/login" style={{ padding:'12px 28px', borderRadius:10, background:'var(--accent)', color:'#fff', fontWeight:700, fontFamily:'Times New Roman' }}>Sign In</Link>
     </div>
   );
 
   if (loading) return (
-    <div style={{ maxWidth:1100, margin:'40px auto', padding:'0 24px' }}>
+    <div className="household-page" style={{ maxWidth:1100, margin:'40px auto', padding:'0 24px' }}>
       {[200,160,400].map((h,i)=><div key={i} className="skeleton" style={{ height:h, marginBottom:20 }}/>)}
     </div>
   );
@@ -686,18 +726,25 @@ export default function HouseholdPage() {
   ));
   const pendingAgreementMembers = members.filter(member => !signedMembers.includes(member));
   const myAgreementSigned = Boolean(currentUser?.email && signedMembers.includes(currentUser.email));
+  const previewMembers = getHouseholdMembers(joinPreview);
+  const previewSignedMembers = Array.from(new Set(
+    joinPreviewNotifications
+      .filter(item => item.type === 'agreement_signed')
+      .map(item => item.fromEmail || item.toEmail)
+      .filter((email): email is string => Boolean(email))
+  ));
 
   // No household yet
   if (!hh) return (
-    <div style={{ maxWidth:560, margin:'80px auto', padding:'0 24px' }}>
-      <div style={{ background:'var(--bg-card)', border:'1px solid var(--border)', borderRadius:20, padding:'40px 36px', boxShadow:'var(--shadow-md)' }}>
+    <div className="household-page" style={{ maxWidth:560, margin:'80px auto', padding:'0 24px' }}>
+      <div className="household-panel household-empty-panel" style={{ background:'var(--bg-card)', border:'1px solid var(--border)', borderRadius:20, padding:'40px 36px', boxShadow:'var(--shadow-md)' }}>
         <div style={{ width:56, height:56, borderRadius:14, background:'var(--accent-light)', display:'flex', alignItems:'center', justifyContent:'center', marginBottom:20 }}>
           <Home size={26} style={{ color:'var(--accent)' }}/>
         </div>
         <h1 style={{ fontSize:28, fontWeight:700, marginBottom:8 }}>No Household Yet</h1>
         <p style={{ color:'var(--text-secondary)', marginBottom:32, lineHeight:1.6 }}>Create a new household for your room, or join an existing one using a 6-character code from your roommate.</p>
 
-        <div style={{ marginBottom:28, padding:'24px', background:'var(--bg-subtle)', borderRadius:14, border:'1px solid var(--border)' }}>
+        <div className="household-panel household-create-panel" style={{ marginBottom:28, padding:'24px', background:'var(--bg-subtle)', borderRadius:14, border:'1px solid var(--border)' }}>
           <h3 style={{ fontSize:16, fontWeight:700, marginBottom:16, fontFamily:'Times New Roman' }}>Create a Household</h3>
           <div style={{ marginBottom:12 }}>
             <label style={lbl}>Household / House Name</label>
@@ -714,7 +761,7 @@ export default function HouseholdPage() {
 
         <div style={{ textAlign:'center' }}>
           <p style={{ color:'var(--text-muted)', fontSize:13, marginBottom:12 }}>— or —</p>
-          <button onClick={()=>setJoinModal(true)} style={{ display:'inline-flex', alignItems:'center', gap:8, padding:'11px 24px', borderRadius:10, border:'1.5px solid var(--border)', background:'var(--bg-subtle)', color:'var(--text-primary)', fontFamily:'Times New Roman', fontWeight:700, fontSize:14, cursor:'pointer' }}>
+          <button onClick={()=>{ setJoinModal(true); setJoinPreview(null); setJoinPreviewNotifications([]); setJoinAgreementAccepted(false); }} style={{ display:'inline-flex', alignItems:'center', gap:8, padding:'11px 24px', borderRadius:10, border:'1.5px solid var(--border)', background:'var(--bg-subtle)', color:'var(--text-primary)', fontFamily:'Times New Roman', fontWeight:700, fontSize:14, cursor:'pointer' }}>
             <UserPlus size={15}/> Join with Code
           </button>
         </div>
@@ -722,18 +769,65 @@ export default function HouseholdPage() {
 
       {joinModal && (
         <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,.55)', zIndex:1000, display:'flex', alignItems:'center', justifyContent:'center', padding:24 }} onClick={()=>setJoinModal(false)}>
-          <div style={{ background:'var(--bg-card)', borderRadius:18, padding:36, width:'100%', maxWidth:400, boxShadow:'var(--shadow-xl)' }} onClick={e=>e.stopPropagation()}>
+          <div className="household-panel household-modal-panel" style={{ background:'var(--bg-card)', borderRadius:18, padding:36, width:'100%', maxWidth:720, boxShadow:'var(--shadow-xl)' }} onClick={e=>e.stopPropagation()}>
             <h2 style={{ fontSize:22, fontWeight:700, marginBottom:6 }}>Join a Household</h2>
-            <p style={{ fontSize:14, color:'var(--text-secondary)', marginBottom:22 }}>Enter the 6-character code from your roommate.</p>
+            <p style={{ fontSize:14, color:'var(--text-secondary)', marginBottom:22 }}>Look up the household, review the existing agreement, and accept the terms before joining.</p>
             <label style={lbl}>Join Code</label>
-            <input value={joinCode} onChange={e=>setJoinCode(e.target.value.toUpperCase().slice(0,6))} placeholder="E.g. HH7K2P" maxLength={6}
-              onKeyDown={e=>e.key==='Enter'&&handleJoin()}
-              style={{ ...inp, fontSize:24, fontFamily:'Courier New,monospace', fontWeight:700, letterSpacing:'0.25em', textAlign:'center', color:'var(--accent)', marginBottom:20, padding:'14px' }}
+            <input value={joinCode} onChange={e=>{ setJoinCode(e.target.value.toUpperCase().slice(0,6)); setJoinPreview(null); setJoinPreviewNotifications([]); setJoinAgreementAccepted(false); }} placeholder="E.g. HH7K2P" maxLength={6}
+              onKeyDown={e=>e.key==='Enter'&&reviewJoinAgreement()}
+              style={{ ...inp, fontSize:24, fontFamily:'Courier New,monospace', fontWeight:700, letterSpacing:'0.25em', textAlign:'center', color:'var(--accent)', marginBottom:14, padding:'14px' }}
               onFocus={focusAcc} onBlur={blurBorder}/>
+            <button onClick={reviewJoinAgreement} disabled={joinLookupLoading || joinCode.trim().length < 5} style={{ width:'100%', display:'inline-flex', alignItems:'center', justifyContent:'center', gap:8, padding:'11px 16px', borderRadius:10, border:'none', background:joinLookupLoading || joinCode.trim().length < 5 ? 'var(--border)' : 'var(--accent)', color:joinLookupLoading || joinCode.trim().length < 5 ? 'var(--text-muted)' : '#fff', fontFamily:'Times New Roman', fontWeight:700, fontSize:14, cursor:joinLookupLoading || joinCode.trim().length < 5 ? 'not-allowed' : 'pointer', marginBottom:18 }}>
+              {joinLookupLoading ? <Loader2 size={14} style={{ animation:'spin 1s linear infinite' }} /> : <Check size={14} />}
+              {joinPreview ? 'Refresh Agreement Preview' : 'Review Agreement'}
+            </button>
+
+            {joinPreview && (
+              <div style={{ display:'grid', gap:16, marginBottom:20 }}>
+                <div style={{ padding:16, borderRadius:14, border:'1px solid var(--border)', background:'var(--bg-subtle)' }}>
+                  <p style={{ fontFamily:'Times New Roman', fontWeight:700, color:'var(--accent)', marginBottom:6 }}>Existing household agreement</p>
+                  <p style={{ fontSize:14, color:'var(--text-secondary)', lineHeight:1.6, marginBottom:10 }}>
+                    By joining {joinPreview.listingTitle}, you agree to the current roommate agreement and household rules.
+                  </p>
+                  <div style={{ display:'grid', gap:8, marginBottom:12 }}>
+                    <div style={{ display:'flex', justifyContent:'space-between', gap:12, fontSize:13 }}><span style={{ color:'var(--text-muted)' }}>Members</span><strong>{previewMembers.length}</strong></div>
+                    <div style={{ display:'flex', justifyContent:'space-between', gap:12, fontSize:13 }}><span style={{ color:'var(--text-muted)' }}>Signed</span><strong>{previewSignedMembers.length}</strong></div>
+                    <div style={{ display:'flex', justifyContent:'space-between', gap:12, fontSize:13 }}><span style={{ color:'var(--text-muted)' }}>Pending</span><strong>{Math.max(0, previewMembers.length - previewSignedMembers.length)}</strong></div>
+                  </div>
+                  <div style={{ maxHeight:180, overflowY:'auto', padding:14, borderRadius:12, border:'1px solid var(--border)', background:'var(--bg-card)', fontSize:13, lineHeight:1.8, color:'var(--text-primary)', marginBottom:12 }}>
+                    <p style={{ fontWeight:700, marginBottom:8 }}>Agreement terms</p>
+                    <p style={{ marginBottom:8 }}>1. Respect shared spaces and keep common areas clean.</p>
+                    <p style={{ marginBottom:8 }}>2. Pay your rent, utilities, and shared costs on time.</p>
+                    <p style={{ marginBottom:8 }}>3. Keep noise, guests, and house rules aligned with the existing household agreement.</p>
+                    <p style={{ marginBottom:8 }}>4. Any changes to the agreement must be accepted by the household.</p>
+                    <p style={{ marginBottom:0 }}>5. By joining, you confirm that you have read and accept all terms and conditions.</p>
+                  </div>
+                  <div style={{ display:'grid', gap:8 }}>
+                    {previewMembers.length > 0 && previewMembers.map(member => {
+                      const signed = previewSignedMembers.includes(member);
+                      return (
+                        <div key={member} style={{ display:'flex', justifyContent:'space-between', gap:10, alignItems:'center', padding:'10px 12px', borderRadius:10, border:`1px solid ${signed ? 'var(--success)' : 'var(--border)'}`, background:signed ? 'var(--success-light)' : 'var(--bg-card)' }}>
+                          <span style={{ fontSize:13, fontWeight:700, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{member}</span>
+                          <span style={{ fontSize:11, fontWeight:700, color:signed ? 'var(--success)' : 'var(--text-muted)' }}>{signed ? 'Signed' : 'Pending'}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <label style={{ display:'flex', alignItems:'flex-start', gap:10, padding:'14px 16px', borderRadius:12, border:'1px solid var(--border)', background:'var(--bg-card)', cursor:'pointer' }}>
+                  <input type="checkbox" checked={joinAgreementAccepted} onChange={e=>setJoinAgreementAccepted(e.target.checked)} style={{ marginTop:3, accentColor:'var(--accent)' }} />
+                  <span style={{ fontSize:13, color:'var(--text-secondary)', lineHeight:1.6 }}>
+                    I accept all terms and conditions of this household agreement and understand that I cannot join without accepting it.
+                  </span>
+                </label>
+              </div>
+            )}
+
             <div style={{ display:'flex', gap:10 }}>
               <button onClick={()=>setJoinModal(false)} style={{ flex:1, padding:'12px', borderRadius:10, border:'1.5px solid var(--border)', background:'var(--bg-subtle)', fontFamily:'Syne,serif', fontWeight:700, fontSize:14, cursor:'pointer', color:'var(--text-secondary)' }}>Cancel</button>
-              <button onClick={handleJoin} disabled={joinCode.length<5} style={{ flex:2, display:'flex', alignItems:'center', justifyContent:'center', gap:7, padding:'12px', borderRadius:10, background:joinCode.length>=5?'var(--accent)':'var(--border)', color:joinCode.length>=5?'#fff':'var(--text-muted)', border:'none', fontFamily:'Syne,serif', fontWeight:700, fontSize:14, cursor:joinCode.length>=5?'pointer':'not-allowed' }}>
-                <UserPlus size={14}/> Join
+              <button onClick={handleJoin} disabled={!joinPreview || !joinAgreementAccepted} style={{ flex:2, display:'flex', alignItems:'center', justifyContent:'center', gap:7, padding:'12px', borderRadius:10, background:joinPreview && joinAgreementAccepted ? 'var(--accent)' : 'var(--border)', color:joinPreview && joinAgreementAccepted ? '#fff' : 'var(--text-muted)', border:'none', fontFamily:'Syne,serif', fontWeight:700, fontSize:14, cursor:joinPreview && joinAgreementAccepted ? 'pointer' : 'not-allowed' }}>
+                <UserPlus size={14}/> Accept & Join
               </button>
             </div>
           </div>
@@ -743,16 +837,23 @@ export default function HouseholdPage() {
   );
 
   return (
-    <div style={{ maxWidth:1100, margin:'0 auto', padding:'36px 24px 80px' }}>
+    <div className="household-page" style={{ maxWidth:1100, margin:'0 auto', padding:'36px 24px 80px' }}>
       {/* Household header */}
-      <div style={{ background:'var(--bg-card)', border:'1px solid var(--border)', borderRadius:18, padding:'28px 32px', marginBottom:28, boxShadow:'var(--shadow-sm)' }}>
+      <div className="household-panel household-header-panel" style={{ background:'var(--bg-card)', border:'1px solid var(--border)', borderRadius:18, padding:'28px 32px', marginBottom:28, boxShadow:'var(--shadow-sm)' }}>
         <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', flexWrap:'wrap', gap:20 }}>
           <div>
             <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:10 }}>
               <div style={{ width:42, height:42, borderRadius:12, background:'var(--accent)', display:'flex', alignItems:'center', justifyContent:'center' }}><Users size={20} color="#fff"/></div>
               <div>
                 <p style={{ fontSize:11, fontFamily:'Times New Roman', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.08em', color:'var(--text-muted)' }}>Your Household</p>
-                <h1 style={{ fontSize:24, fontWeight:700, lineHeight:1.2 }}>{hh.listingTitle}</h1>
+                <div style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
+                  <h1 style={{ fontSize:24, fontWeight:700, lineHeight:1.2 }}>{hh.listingTitle}</h1>
+                  {members.length > 1 && (
+                    <span style={{ display:'inline-flex', alignItems:'center', gap:6, padding:'5px 10px', borderRadius:999, background:'var(--success-light)', color:'var(--success)', border:'1px solid var(--success)', fontSize:11, fontWeight:800, textTransform:'uppercase', letterSpacing:'0.06em' }}>
+                      <CheckCircle size={13} /> Active
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
             <div style={{ display:'flex', gap:24, marginTop:10, flexWrap:'wrap' }}>
@@ -770,7 +871,7 @@ export default function HouseholdPage() {
           </div>
 
           {/* Join code */}
-          <div style={{ background:'var(--bg-subtle)', border:'1px solid var(--border)', borderRadius:14, padding:'20px 24px', minWidth:240 }}>
+          <div className="household-panel household-code-panel" style={{ background:'var(--bg-subtle)', border:'1px solid var(--border)', borderRadius:14, padding:'20px 24px', minWidth:240 }}>
             <p style={{ fontSize:11, fontFamily:'Times New Roman', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.08em', color:'var(--text-muted)', marginBottom:10, display:'flex', alignItems:'center', gap:6 }}><Hash size={12}/>Household Join Code</p>
             <div style={{ fontFamily:'Times New Roman', fontSize:30, fontWeight:700, letterSpacing:'0.28em', color:'var(--accent)', background:'var(--accent-light)', padding:'12px 20px', borderRadius:10, border:'2px dashed var(--accent)', textAlign:'center', marginBottom:10, userSelect:'all' }}>
               {hh.joinCode}
@@ -779,7 +880,7 @@ export default function HouseholdPage() {
               <button onClick={copyCode} style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', gap:5, padding:'8px 0', borderRadius:9, border:'1.5px solid var(--border)', background:copied?'var(--success-light)':'var(--bg-card)', color:copied?'var(--success)':'var(--text-secondary)', cursor:'pointer', fontSize:13, fontWeight:700, fontFamily:'Times New Roman' }}>
                 {copied?<CheckCircle size={13}/>:<Copy size={13}/>}{copied?'Copied!':'Copy'}
               </button>
-              <button onClick={()=>setJoinModal(true)} style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', gap:5, padding:'8px 0', borderRadius:9, border:'1.5px solid var(--border)', background:'var(--bg-card)', color:'var(--text-secondary)', cursor:'pointer', fontSize:13, fontWeight:700, fontFamily:'Times New Roman' }}>
+              <button onClick={()=>{ setJoinModal(true); setJoinPreview(null); setJoinPreviewNotifications([]); setJoinAgreementAccepted(false); }} style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', gap:5, padding:'8px 0', borderRadius:9, border:'1.5px solid var(--border)', background:'var(--bg-card)', color:'var(--text-secondary)', cursor:'pointer', fontSize:13, fontWeight:700, fontFamily:'Times New Roman' }}>
                 <UserPlus size={13}/>Join Another
               </button>
             </div>
@@ -826,7 +927,7 @@ export default function HouseholdPage() {
       </div>
 
       {/* Tabs */}
-      <div style={{ display:'flex', gap:4, marginBottom:24, background:'var(--bg-card)', border:'1px solid var(--border)', borderRadius:12, padding:5, overflowX:'auto' }}>
+      <div className="household-panel household-tabs-panel" style={{ display:'flex', gap:4, marginBottom:24, background:'var(--bg-card)', border:'1px solid var(--border)', borderRadius:12, padding:5, overflowX:'auto' }}>
         {TABS.map(({id,label,icon:Icon})=>(
           <button key={id} onClick={()=>setActiveTab(id)}
             style={{ flex:'0 0 auto', display:'flex', alignItems:'center', gap:6, padding:'9px 16px', borderRadius:9, border:'none', cursor:'pointer', transition:'all .13s', fontFamily:'Times New Roman', fontSize:13, fontWeight:700, background:activeTab===id?'var(--accent)':'transparent', color:activeTab===id?'#fff':'var(--text-secondary)', whiteSpace:'nowrap' }}>
@@ -836,7 +937,7 @@ export default function HouseholdPage() {
       </div>
 
       {/* Tab content */}
-      <div style={{ background:'var(--bg-card)', border:'1px solid var(--border)', borderRadius:14, padding:'24px 26px', boxShadow:'var(--shadow-sm)' }}>
+      <div className="household-panel household-content-panel" style={{ background:'var(--bg-card)', border:'1px solid var(--border)', borderRadius:14, padding:'24px 26px', boxShadow:'var(--shadow-sm)' }}>
         {activeTab==='ledger'   && <MealLedger       hh={hh} myEmail={currentUser.email!}/>}
         {activeTab==='dues'     && <DuesPayments     hh={hh} myEmail={currentUser.email!}/>}
         {activeTab==='meals'    && <DailyMeals       hh={hh} myEmail={currentUser.email!}/>}
@@ -845,18 +946,65 @@ export default function HouseholdPage() {
 
       {/* Join modal */}
       {joinModal && (
-        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,.55)', zIndex:1000, display:'flex', alignItems:'center', justifyContent:'center', padding:24 }} onClick={()=>setJoinModal(false)}>
-          <div style={{ background:'var(--bg-card)', borderRadius:18, padding:36, width:'100%', maxWidth:400, boxShadow:'var(--shadow-xl)' }} onClick={e=>e.stopPropagation()}>
+        <div className="household-page" style={{ position:'fixed', inset:0, background:'rgba(0,0,0,.55)', zIndex:1000, display:'flex', alignItems:'center', justifyContent:'center', padding:24 }} onClick={()=>setJoinModal(false)}>
+          <div className="household-panel household-modal-panel" style={{ background:'var(--bg-card)', borderRadius:18, padding:36, width:'100%', maxWidth:720, boxShadow:'var(--shadow-xl)' }} onClick={e=>e.stopPropagation()}>
             <h2 style={{ fontSize:22, fontWeight:700, marginBottom:6 }}>Join Another Household</h2>
-            <p style={{ fontSize:14, color:'var(--text-secondary)', marginBottom:22 }}>Enter the 6-character code.</p>
+            <p style={{ fontSize:14, color:'var(--text-secondary)', marginBottom:22 }}>Look up the household, review the existing agreement, and accept the terms before joining.</p>
             <label style={lbl}>Join Code</label>
-            <input value={joinCode} onChange={e=>setJoinCode(e.target.value.toUpperCase().slice(0,6))} placeholder="E.g. HH7K2P" maxLength={6} onKeyDown={e=>e.key==='Enter'&&handleJoin()}
-              style={{ ...inp, fontSize:24, fontFamily:'Courier New,monospace', fontWeight:700, letterSpacing:'0.25em', textAlign:'center', color:'var(--accent)', marginBottom:20, padding:'14px' }}
+            <input value={joinCode} onChange={e=>{ setJoinCode(e.target.value.toUpperCase().slice(0,6)); setJoinPreview(null); setJoinPreviewNotifications([]); setJoinAgreementAccepted(false); }} placeholder="E.g. HH7K2P" maxLength={6} onKeyDown={e=>e.key==='Enter'&&reviewJoinAgreement()}
+              style={{ ...inp, fontSize:24, fontFamily:'Courier New,monospace', fontWeight:700, letterSpacing:'0.25em', textAlign:'center', color:'var(--accent)', marginBottom:14, padding:'14px' }}
               onFocus={focusAcc} onBlur={blurBorder}/>
+            <button onClick={reviewJoinAgreement} disabled={joinLookupLoading || joinCode.trim().length < 5} style={{ width:'100%', display:'inline-flex', alignItems:'center', justifyContent:'center', gap:8, padding:'11px 16px', borderRadius:10, border:'none', background:joinLookupLoading || joinCode.trim().length < 5 ? 'var(--border)' : 'var(--accent)', color:joinLookupLoading || joinCode.trim().length < 5 ? 'var(--text-muted)' : '#fff', fontFamily:'Times New Roman', fontWeight:700, fontSize:14, cursor:joinLookupLoading || joinCode.trim().length < 5 ? 'not-allowed' : 'pointer', marginBottom:18 }}>
+              {joinLookupLoading ? <Loader2 size={14} style={{ animation:'spin 1s linear infinite' }} /> : <Check size={14} />}
+              {joinPreview ? 'Refresh Agreement Preview' : 'Review Agreement'}
+            </button>
+
+            {joinPreview && (
+              <div style={{ display:'grid', gap:16, marginBottom:20 }}>
+                <div style={{ padding:16, borderRadius:14, border:'1px solid var(--border)', background:'var(--bg-subtle)' }}>
+                  <p style={{ fontFamily:'Times New Roman', fontWeight:700, color:'var(--accent)', marginBottom:6 }}>Existing household agreement</p>
+                  <p style={{ fontSize:14, color:'var(--text-secondary)', lineHeight:1.6, marginBottom:10 }}>
+                    By joining {joinPreview.listingTitle}, you agree to the current roommate agreement and household rules.
+                  </p>
+                  <div style={{ display:'grid', gap:8, marginBottom:12 }}>
+                    <div style={{ display:'flex', justifyContent:'space-between', gap:12, fontSize:13 }}><span style={{ color:'var(--text-muted)' }}>Members</span><strong>{previewMembers.length}</strong></div>
+                    <div style={{ display:'flex', justifyContent:'space-between', gap:12, fontSize:13 }}><span style={{ color:'var(--text-muted)' }}>Signed</span><strong>{previewSignedMembers.length}</strong></div>
+                    <div style={{ display:'flex', justifyContent:'space-between', gap:12, fontSize:13 }}><span style={{ color:'var(--text-muted)' }}>Pending</span><strong>{Math.max(0, previewMembers.length - previewSignedMembers.length)}</strong></div>
+                  </div>
+                  <div style={{ maxHeight:180, overflowY:'auto', padding:14, borderRadius:12, border:'1px solid var(--border)', background:'var(--bg-card)', fontSize:13, lineHeight:1.8, color:'var(--text-primary)', marginBottom:12 }}>
+                    <p style={{ fontWeight:700, marginBottom:8 }}>Agreement terms</p>
+                    <p style={{ marginBottom:8 }}>1. Respect shared spaces and keep common areas clean.</p>
+                    <p style={{ marginBottom:8 }}>2. Pay your rent, utilities, and shared costs on time.</p>
+                    <p style={{ marginBottom:8 }}>3. Keep noise, guests, and house rules aligned with the existing household agreement.</p>
+                    <p style={{ marginBottom:8 }}>4. Any changes to the agreement must be accepted by the household.</p>
+                    <p style={{ marginBottom:0 }}>5. By joining, you confirm that you have read and accept all terms and conditions.</p>
+                  </div>
+                  <div style={{ display:'grid', gap:8 }}>
+                    {previewMembers.length > 0 && previewMembers.map(member => {
+                      const signed = previewSignedMembers.includes(member);
+                      return (
+                        <div key={member} style={{ display:'flex', justifyContent:'space-between', gap:10, alignItems:'center', padding:'10px 12px', borderRadius:10, border:`1px solid ${signed ? 'var(--success)' : 'var(--border)'}`, background:signed ? 'var(--success-light)' : 'var(--bg-card)' }}>
+                          <span style={{ fontSize:13, fontWeight:700, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{member}</span>
+                          <span style={{ fontSize:11, fontWeight:700, color:signed ? 'var(--success)' : 'var(--text-muted)' }}>{signed ? 'Signed' : 'Pending'}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <label style={{ display:'flex', alignItems:'flex-start', gap:10, padding:'14px 16px', borderRadius:12, border:'1px solid var(--border)', background:'var(--bg-card)', cursor:'pointer' }}>
+                  <input type="checkbox" checked={joinAgreementAccepted} onChange={e=>setJoinAgreementAccepted(e.target.checked)} style={{ marginTop:3, accentColor:'var(--accent)' }} />
+                  <span style={{ fontSize:13, color:'var(--text-secondary)', lineHeight:1.6 }}>
+                    I accept all terms and conditions of this household agreement and understand that I cannot join without accepting it.
+                  </span>
+                </label>
+              </div>
+            )}
+
             <div style={{ display:'flex', gap:10 }}>
               <button onClick={()=>setJoinModal(false)} style={{ flex:1, padding:'12px', borderRadius:10, border:'1.5px solid var(--border)', background:'var(--bg-subtle)', fontFamily:'Syne,serif', fontWeight:700, fontSize:14, cursor:'pointer', color:'var(--text-secondary)' }}>Cancel</button>
-              <button onClick={handleJoin} disabled={joinCode.length<5} style={{ flex:2, display:'flex', alignItems:'center', justifyContent:'center', gap:7, padding:'12px', borderRadius:10, background:joinCode.length>=5?'var(--accent)':'var(--border)', color:joinCode.length>=5?'#fff':'var(--text-muted)', border:'none', fontFamily:'Syne,serif', fontWeight:700, fontSize:14, cursor:joinCode.length>=5?'pointer':'not-allowed' }}>
-                <UserPlus size={14}/>Join
+              <button onClick={handleJoin} disabled={!joinPreview || !joinAgreementAccepted} style={{ flex:2, display:'flex', alignItems:'center', justifyContent:'center', gap:7, padding:'12px', borderRadius:10, background:joinPreview && joinAgreementAccepted ? 'var(--accent)' : 'var(--border)', color:joinPreview && joinAgreementAccepted ? '#fff' : 'var(--text-muted)', border:'none', fontFamily:'Syne,serif', fontWeight:700, fontSize:14, cursor:joinPreview && joinAgreementAccepted ? 'pointer' : 'not-allowed' }}>
+                <UserPlus size={14}/>Accept & Join
               </button>
             </div>
           </div>

@@ -41,6 +41,10 @@ interface Household {
   ownerEmail: string;
 }
 
+function getHouseholdMembers(household: Household | null | undefined) {
+  return household?.memberUids ?? household?.members ?? [];
+}
+
 function getConversationKey(message: Pick<DBMessage, 'listingId' | 'fromEmail' | 'toEmail'>, myEmail: string) {
   const otherEmail = message.fromEmail === myEmail ? message.toEmail : message.fromEmail;
   return `${message.listingId}::${otherEmail}`;
@@ -470,6 +474,7 @@ function MessagesPageContent() {
     return conversations.filter(c => c.otherName.toLowerCase().includes(query) || c.listingTitle.toLowerCase().includes(query));
   }, [conversations, searchQuery]);
   const totalUnread = useMemo(() => conversations.reduce((s,c)=>s+c.unread,0), [conversations]);
+  const householdMembers = getHouseholdMembers(household);
 
   if (!currentUser) return (
     <div style={{maxWidth:460,margin:'100px auto',textAlign:'center',padding:24}}>
@@ -511,8 +516,15 @@ function MessagesPageContent() {
               <span style={{fontSize:13,color:'var(--text-muted)'}}>This message links to:</span>
               <Link href={`/listings/${draftListingId}`} style={{fontSize:13,color:'var(--accent)',fontWeight:700}}>Listing</Link>
               {householdForDraft ? (
-                <button onClick={()=>handleJoinByCode(householdForDraft.joinCode)} disabled={joining}
-                  style={{padding:'8px 12px',borderRadius:8,background:'var(--accent-2)',color:'#fff',border:'none',fontWeight:700}}>Join listing&apos;s room</button>
+                <>
+                  {getHouseholdMembers(householdForDraft).length > 1 && (
+                    <span style={{display:'inline-flex',alignItems:'center',gap:5,padding:'4px 9px',borderRadius:999,background:'var(--success-light)',color:'var(--success)',border:'1px solid var(--success)',fontSize:10,fontWeight:800,textTransform:'uppercase',letterSpacing:'0.06em'}}>
+                      Active
+                    </span>
+                  )}
+                  <button onClick={()=>handleJoinByCode(householdForDraft.joinCode)} disabled={joining}
+                    style={{padding:'8px 12px',borderRadius:8,background:'var(--accent-2)',color:'#fff',border:'none',fontWeight:700}}>Join listing&apos;s room</button>
+                </>
               ) : (
                 <span style={{fontSize:12,color:'var(--text-muted)'}}>No room created yet</span>
               )}
@@ -715,7 +727,12 @@ function MessagesPageContent() {
         <div style={{padding:'14px 20px',borderBottom:'1px solid var(--border)',background:'var(--bg-subtle)',display:'flex',alignItems:'center',gap:10}}>
           <Bell size={16} style={{color:'var(--accent)'}}/>
           <p style={{fontFamily:'Times New Roman',fontWeight:700,fontSize:14,color:'var(--text-primary)'}}>Room Chat - {household.listingTitle}</p>
-          <span style={{marginLeft:'auto',fontSize:11,color:'var(--text-muted)',fontStyle:'italic'}}>Members: {household.members?.length || 0}</span>
+          {householdMembers.length > 1 && (
+            <span style={{display:'inline-flex',alignItems:'center',gap:5,padding:'4px 9px',borderRadius:999,background:'var(--success-light)',color:'var(--success)',border:'1px solid var(--success)',fontSize:10,fontWeight:800,textTransform:'uppercase',letterSpacing:'0.06em'}}>
+              Active
+            </span>
+          )}
+          <span style={{marginLeft:'auto',fontSize:11,color:'var(--text-muted)',fontStyle:'italic'}}>Members: {householdMembers.length}</span>
         </div>
 
         {/* Messages */}

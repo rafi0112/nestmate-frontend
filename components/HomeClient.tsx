@@ -1,6 +1,6 @@
 ﻿'use client';
 import toast from 'react-hot-toast';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Listing } from '@/lib/types';
 import ListingCard from './ListingCard';
@@ -77,6 +77,7 @@ export default function HomeClient({ listings }: Props) {
   });
   const [statsLoading, setStatsLoading] = useState(true);
   const [households, setHouseholds] = useState<any[]>([]);
+  const reviewMarqueeTrackRef = useRef<HTMLDivElement | null>(null);
 
   const slides = [
     { headline: 'Find your perfect roommate', sub: 'Match by lifestyle, budget, and vibe — across Bangladesh.' },
@@ -125,6 +126,41 @@ export default function HomeClient({ listings }: Props) {
     return () => cancelAnimationFrame(frame);
   }, [stats]);
 
+  useEffect(() => {
+    const track = reviewMarqueeTrackRef.current;
+    if (!track || reviews.length === 0) return;
+
+    let animationFrame = 0;
+    let lastTime = performance.now();
+    const speed = 0.028;
+
+    let offset = 0;
+    const getLoopWidth = () => track.scrollWidth / 3;
+    const applyTransform = () => {
+      track.style.transform = `translate3d(${offset}px, 0, 0)`;
+    };
+
+    const step = (now: number) => {
+      const delta = now - lastTime;
+      lastTime = now;
+
+      offset -= speed * delta;
+      const loopPoint = getLoopWidth();
+
+      if (loopPoint > 0 && offset <= -loopPoint) {
+        offset += loopPoint;
+      }
+
+      applyTransform();
+
+      animationFrame = requestAnimationFrame(step);
+    };
+
+    applyTransform();
+    animationFrame = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(animationFrame);
+  }, [reviews]);
+
   const submitReview = async () => {
     if (!reviewForm.houseName.trim() || !reviewForm.text.trim()) return;
     if (!currentUser) return;
@@ -152,6 +188,7 @@ export default function HomeClient({ listings }: Props) {
     : featured;
 
   const slide = slides[heroSlide];
+  const marqueeReviews = [...reviews, ...reviews, ...reviews];
   const statCards = [
     { label: 'Active Listings', value: displayStats.activeListings, suffix: '+', icon: Home },
     { label: 'Total Users', value: displayStats.totalUsers, suffix: '+', icon: Users },
@@ -346,29 +383,31 @@ export default function HomeClient({ listings }: Props) {
               {!currentUser && <Link href="/login" style={{ display: 'inline-block', marginTop: 14, color: 'var(--accent)', fontWeight: 700, fontSize: 'clamp(12px,2vw,14px)' }}>Sign in →</Link>}
             </div>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(clamp(260px,80vw,300px),1fr))', gap: 'clamp(16px,3vw,20px)' }}>
-              {reviews.map((r) => (
-                <div key={r._id || r.id || r.date} style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 14, padding: 'clamp(16px,3vw,22px) clamp(16px,3vw,24px)', boxShadow: 'var(--shadow-sm)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, flexWrap: 'wrap', gap: 8 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
-                      <div style={{ width: 38, height: 38, borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, color: '#fff', fontFamily: "'Times New Roman', Times, serif", flexShrink: 0 }}>
-                        {r.authorName[0]}
+            <div className="review-marquee-shell">
+              <div className="review-marquee-track" ref={reviewMarqueeTrackRef} style={{ width: 'max-content' }}>
+                {marqueeReviews.map((r, index) => (
+                  <div key={`${r._id || r.id || r.date}-${index}`} className="review-marquee-card">
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, flexWrap: 'wrap', gap: 8 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+                        <div style={{ width: 38, height: 38, borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, color: '#fff', fontFamily: "'Times New Roman', Times, serif", flexShrink: 0 }}>
+                          {r.authorName[0]}
+                        </div>
+                        <div style={{ minWidth: 0 }}>
+                          <p style={{ fontWeight: 700, fontSize: 'clamp(12px,2vw,14px)', fontFamily: "'Times New Roman', Times, serif", color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.authorName}</p>
+                          <p style={{ fontSize: 'clamp(10px,2vw,11px)', color: 'var(--text-muted)' }}>{new Date(r.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                        </div>
                       </div>
-                      <div style={{ minWidth: 0 }}>
-                        <p style={{ fontWeight: 700, fontSize: 'clamp(12px,2vw,14px)', fontFamily: "'Times New Roman', Times, serif", color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.authorName}</p>
-                        <p style={{ fontSize: 'clamp(10px,2vw,11px)', color: 'var(--text-muted)' }}>{new Date(r.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
-                      </div>
+                      <StarRating rating={r.rating} />
                     </div>
-                    <StarRating rating={r.rating} />
+                    <div style={{ padding: '8px 12px', background: 'var(--accent-light)', borderRadius: 7, marginBottom: 10 }}>
+                      <p style={{ fontSize: 'clamp(10px,2vw,11px)', fontWeight: 700, color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: 5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: "'Times New Roman', Times, serif" }}>
+                        <Hash size={10} /> {r.houseName}
+                      </p>
+                    </div>
+                    <p style={{ fontSize: 'clamp(12px,2vw,14px)', color: 'var(--text-secondary)', lineHeight: 1.65, fontStyle: 'italic', fontFamily: "'Times New Roman', Times, serif" }}>"{r.text}"</p>
                   </div>
-                  <div style={{ padding: '8px 12px', background: 'var(--accent-light)', borderRadius: 7, marginBottom: 10 }}>
-                    <p style={{ fontSize: 'clamp(10px,2vw,11px)', fontWeight: 700, color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: 5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: "'Times New Roman', Times, serif" }}>
-                      <Hash size={10} /> {r.houseName}
-                    </p>
-                  </div>
-                  <p style={{ fontSize: 'clamp(12px,2vw,14px)', color: 'var(--text-secondary)', lineHeight: 1.65, fontStyle: 'italic', fontFamily: "'Times New Roman', Times, serif" }}>"{r.text}"</p>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           )}
         </div>
